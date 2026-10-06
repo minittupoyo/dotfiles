@@ -31,7 +31,7 @@ PanelFrame {
                 Repeater {
                     model: [{key:"showCpu",label:"CPU使用率"},{key:"showMemory",label:"メモリ使用率"},
                         {key:"showNetwork",label:"ネットワーク"},{key:"showWindowTitle",label:"ウィンドウ名"},
-                        {key:"showTray",label:"システムトレイ"},{key:"clock24",label:"24時間表示"},
+                        {key:"showTray",label:"システムトレイ"},
                         {key:"osd",label:"音量・明るさのOSD"},{key:"dnd",label:"通知を一時停止"}]
                     RowLayout {
                         required property var modelData

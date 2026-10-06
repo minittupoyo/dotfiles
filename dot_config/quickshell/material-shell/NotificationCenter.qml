@@ -55,6 +55,6 @@ PanelFrame {
             }
             Text { anchors.centerIn: parent; visible: list.count === 0; text: "通知はありません"; color: Theme.surfaceVariantText; font.family: Theme.fontFamily; font.pixelSize: Theme.bodySize }
         }
-        RowLayout { Layout.fillWidth: true; Item { Layout.fillWidth: true } ShellButton { text: "履歴を消去"; enabled: (panel.service?.history.length ?? 0) > 0; onClicked: panel.service.clearHistory() } }
+        RowLayout { Layout.fillWidth: true; Item { Layout.fillWidth: true } ShellButton { text: "履歴を消去"; destructive: true; enabled: (panel.service?.history.length ?? 0) > 0; onClicked: panel.service.clearHistory() } }
     }
 }

@@ -18,15 +18,29 @@ TestCase {
         Theme.palette = {};
         compare(Theme.primary, "#b4cea5");
         compare(Theme.surfaceContainer, "#1e211d");
+        compare(Theme.outline, "#8e9387");
     }
-    function test_complete_palette_updates_all_roles() {
+    function test_legacy_palette_without_outline_is_accepted() {
         const roles = ["surface", "surface_container", "surface_container_high", "surface_container_highest",
             "on_surface", "on_surface_variant", "outline_variant", "primary", "secondary_container",
             "on_secondary_container", "error", "inverse_surface", "inverse_on_surface"];
         const colors = {};
         roles.forEach(role => colors[role] = "#abcdef");
         Theme.acceptPalette(JSON.stringify({version: 1, colors: colors}));
+        compare(Theme.primary.toString(), "#abcdef");
+        compare(Theme.outline.toString(), "#8e9387");
+        compare(Theme.errorContainer.toString(), "#93000a");
+    }
+    function test_complete_palette_updates_all_roles() {
+        const roles = ["surface", "surface_container", "surface_container_high", "surface_container_highest",
+            "on_surface", "on_surface_variant", "outline", "outline_variant", "primary", "secondary_container",
+            "on_secondary_container", "error", "on_error", "error_container", "on_error_container", "inverse_surface", "inverse_on_surface"];
+        const colors = {};
+        roles.forEach(role => colors[role] = "#abcdef");
+        Theme.acceptPalette(JSON.stringify({version: 1, colors: colors}));
         compare(Theme.primary, "#abcdef");
+        compare(Theme.outline, "#abcdef");
+        compare(Theme.errorContainer.toString(), "#abcdef");
         compare(Theme.panelBackground, "#abcdef");
         compare(Theme.inverseSurfaceText, "#abcdef");
         colors.primary = "invalid";

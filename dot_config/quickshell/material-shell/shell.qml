@@ -40,14 +40,37 @@ ShellRoot {
         closePanels(); panelScreen = screen ?? activeScreen(); activePanel = name;
     }
     function openPanel(name) { closePanels(); panelScreen = activeScreen(); activePanel = name; }
-    SettingsPanel { opened: root.activePanel === "settings"; screen: root.panelScreen; onDismissed: root.activePanel = ""; onWallpaperRequested: root.toggleWallpaper(root.panelScreen); onPanelRequested: name => root.togglePanel(name, root.panelScreen) }
+    function openControlTab(name, screen) {
+        if (name === "display") name = "quick";
+        if (root.activePanel !== "control") { root.closePanels(); root.panelScreen = screen ?? root.activeScreen(); root.activePanel = "control"; }
+        controlPanel.selectTab(name);
+    }
+    function toggleControlTab(name, screen) {
+        if (name === "display") name = "quick";
+        if (root.activePanel === "control" && controlPanel.tab === name) { root.activePanel = ""; return; }
+        root.openControlTab(name, screen);
+    }
+    ControlPanel {
+        id: controlPanel
+        opened: root.activePanel === "control"
+        screen: root.panelScreen
+        sink: root.sink
+        brightness: root.stats.brightness
+        notificationService: notificationLoader.item
+        playerService: mediaService
+        captureActive: root.captureActive || captureDispatch.running
+        onDismissed: root.activePanel = ""
+        onPanelRequested: name => {
+            if (name === "wallpaper") root.toggleWallpaper(root.panelScreen);
+            else if (name === "media") root.openControlTab("media", root.panelScreen);
+            else if (name === "cancel-capture") root.cancelCapture();
+            else if (name.startsWith("capture:")) root.capture(name.slice(8));
+            else root.openControlTab(name, root.panelScreen);
+        }
+    }
     SessionMenu { id: sessionPanel; opened: root.activePanel === "session"; screen: root.panelScreen; onDismissed: root.activePanel = "" }
-    ClipboardPanel { opened: root.activePanel === "clipboard"; screen: root.panelScreen; onDismissed: root.activePanel = "" }
     TrayMenu { id: trayMenu; opened: root.activePanel === "tray"; screen: root.panelScreen; onDismissed: root.activePanel = "" }
-    NotificationCenter { opened: root.activePanel === "notifications"; screen: root.panelScreen; service: notificationLoader.item; onDismissed: root.activePanel = "" }
     MediaService { id: mediaService }
-    AudioPanel { id: audioPanel; opened: root.activePanel === "audio"; screen: root.panelScreen; onDismissed: root.activePanel = "" }
-    CapturePanel { id: capturePanel; opened: root.activePanel === "capture"; screen: root.panelScreen; busy: root.captureActive || captureDispatch.running; onDismissed: root.activePanel = ""; onCaptureRequested: mode => root.capture(mode); onCancelRequested: root.cancelCapture() }
     Loader {
         id: notificationLoader
         active: Quickshell.env("MATERIAL_SHELL_INDEPENDENT") === "1"
@@ -63,7 +86,7 @@ ShellRoot {
             if (!output) { osd.show("screenshot_monitor", "ディスプレイを特定できません", 0, root.activeScreen()); return; }
             command.push("--output", output);
         }
-        capturePanel.message = "";
+        controlPanel.message = "";
         captureActive = true;
         pendingCaptureCommand = command;
         closePanels();
@@ -76,7 +99,7 @@ ShellRoot {
         captureActive = false;
         captureLaunchTimeout.stop();
         captureTimeout.stop();
-        capturePanel.message = "撮影をキャンセルしました";
+        controlPanel.message = "撮影をキャンセルしました";
         captureDispatch.command = ["/usr/bin/hyprctl", "eval", "hl.exec_cmd(" + JSON.stringify(root.cliDir + "/material-screenshot cancel") + ")"];
         captureDispatch.running = true;
     }
@@ -99,7 +122,7 @@ ShellRoot {
             if (root.captureActive && !captureDispatch.running) {
                 root.captureActive = false;
                 captureTimeout.stop();
-                capturePanel.message = "撮影を開始できませんでした";
+                controlPanel.message = "撮影を開始できませんでした";
                 osd.show("screenshot_monitor", "撮影を開始できませんでした", 0, root.activeScreen());
             }
         }
@@ -109,13 +132,13 @@ ShellRoot {
         interval: 60000
         onTriggered: {
             root.cancelCapture();
-            capturePanel.message = "時間切れのため撮影を終了しました";
+            controlPanel.message = "時間切れのため撮影を終了しました";
             osd.show("screenshot_monitor", "スクリーンショットを終了しました", 0, root.activeScreen());
         }
     }
     Process {
         id: captureDispatch
-        stderr: SplitParser { onRead: data => capturePanel.message = data.trim() }
+        stderr: SplitParser { onRead: data => controlPanel.message = data.trim() }
         onExited: (code, status) => {
             if (code !== 0) {
                 root.captureActive = false;
@@ -125,16 +148,17 @@ ShellRoot {
             }
         }
     }
-    IpcHandler { target: "settings"; function toggle(): void { root.togglePanel("settings"); } function open(): void { root.openPanel("settings"); } function close(): void { root.activePanel = ""; } function status(): string { return JSON.stringify({visible:root.activePanel === "settings",values:Settings.values,error:Settings.error,saving:Settings.saving}); } }
+    IpcHandler { target: "settings"; function toggle(): void { root.toggleControlTab("settings"); } function open(): void { root.openControlTab("settings"); } function close(): void { root.activePanel = ""; } function status(): string { return JSON.stringify({visible:root.activePanel === "control" && controlPanel.tab === "settings",values:Settings.values,error:Settings.error,saving:Settings.saving}); } }
+    IpcHandler { target: "control"; function toggle(): void { root.togglePanel("control"); } function open(): void { root.openControlTab("quick"); } function tab(name: string): void { root.openControlTab(name); } function close(): void { root.activePanel = ""; } function status(): string { return JSON.stringify({visible:root.activePanel === "control",tab:controlPanel.tab,radio:controlPanel.radio,error:controlPanel.error}); } }
     IpcHandler { target: "session"; function toggle(): void { root.togglePanel("session"); } function open(): void { root.openPanel("session"); } function close(): void { root.activePanel = ""; } function status(): string { return JSON.stringify({visible:root.activePanel === "session",pending:sessionPanel.pendingAction,executing:sessionPanel.executing,error:sessionPanel.error}); } }
-    IpcHandler { target: "clipboard"; function toggle(): void { root.togglePanel("clipboard"); } function close(): void { root.activePanel = ""; } }
-    IpcHandler { target: "notifications"; function toggle(): void { root.togglePanel("notifications"); } function close(): void { root.activePanel = ""; } function status(): string { return JSON.stringify({active:!!notificationLoader.item,count:notificationLoader.item?.history.length ?? 0,toasts:notificationLoader.item?.toasts.length ?? 0,dnd:Settings.values.dnd}); } }
-    IpcHandler { target: "media"; function toggle(): void { root.togglePanel("media"); } function open(): void { root.openPanel("media"); } function close(): void { root.activePanel = ""; } function status(): string { return JSON.stringify({visible:root.activePanel === "media",players:mediaService.players.length,connected:!!mediaService.player,playing:mediaService.player?.isPlaying ?? false}); } }
-    IpcHandler { target: "audio"; function toggle(): void { root.togglePanel("audio"); } function open(): void { root.openPanel("audio"); } function close(): void { root.activePanel = ""; } function status(): string { return JSON.stringify({visible: audioPanel.visible, devices: audioPanel.devices.map(n => ({name:n.description || n.name,isSink:n.isSink})),output:audioPanel.output?.name,input:audioPanel.input?.name}); } }
+    IpcHandler { target: "clipboard"; function toggle(): void { root.toggleControlTab("clipboard"); } function open(): void { root.openControlTab("clipboard"); } function close(): void { root.activePanel = ""; } }
+    IpcHandler { target: "notifications"; function toggle(): void { root.toggleControlTab("notifications"); } function open(): void { root.openControlTab("notifications"); } function close(): void { root.activePanel = ""; } function status(): string { return JSON.stringify({active:!!notificationLoader.item,count:notificationLoader.item?.history.length ?? 0,toasts:notificationLoader.item?.toasts.length ?? 0,dnd:Settings.values.dnd}); } }
+    IpcHandler { target: "media"; function toggle(): void { root.toggleControlTab("media"); } function open(): void { root.openControlTab("media"); } function close(): void { root.activePanel = ""; } function status(): string { return JSON.stringify({visible:root.activePanel === "control" && controlPanel.tab === "media",players:mediaService.players.length,connected:!!mediaService.player,playing:mediaService.player?.isPlaying ?? false}); } }
+    IpcHandler { target: "audio"; function toggle(): void { root.toggleControlTab("audio"); } function open(): void { root.openControlTab("audio"); } function close(): void { root.activePanel = ""; } function status(): string { return JSON.stringify({visible:root.activePanel === "control" && controlPanel.tab === "audio",devices:controlPanel.devices.map(n => ({name:n.description || n.name,isSink:n.isSink})),output:controlPanel.output?.name,input:controlPanel.input?.name}); } }
     IpcHandler {
         target: "capture"
-        function toggle(): void { root.togglePanel("capture"); }
-        function open(): void { root.openPanel("capture"); }
+        function toggle(): void { root.toggleControlTab("capture"); }
+        function open(): void { root.openControlTab("capture"); }
         function all(): void { root.capture("all"); }
         function monitor(): void { root.capture("monitor"); }
         function region(): void { root.capture("region"); }
@@ -144,14 +168,14 @@ ShellRoot {
             root.captureActive = false;
             captureLaunchTimeout.stop(); captureTimeout.stop();
             if (status === "saved") {
-                capturePanel.message = copied === "true" ? "保存しました: " + filename : "保存しましたが、クリップボードへコピーできませんでした: " + filename;
+                controlPanel.message = copied === "true" ? "保存しました: " + filename : "保存しましたが、クリップボードへコピーできませんでした: " + filename;
                 osd.show("screenshot_monitor", copied === "true" ? "スクリーンショットを保存しました" : "保存しました・コピーできません", 1, root.activeScreen());
             } else if (status === "error") {
-                capturePanel.message = "撮影できませんでした";
+                controlPanel.message = "撮影できませんでした";
                 osd.show("screenshot_monitor", "撮影できませんでした", 0, root.activeScreen());
-            } else if (status === "cancelled") capturePanel.message = "範囲選択をキャンセルしました";
+            } else if (status === "cancelled") controlPanel.message = "範囲選択をキャンセルしました";
         }
-        function status(): string { return JSON.stringify({visible:root.activePanel === "capture",busy:root.captureActive,launcherRunning:captureDispatch.running}); }
+        function status(): string { return JSON.stringify({visible:root.activePanel === "control" && controlPanel.tab === "capture",busy:root.captureActive,launcherRunning:captureDispatch.running}); }
     }
     Process {
         id: settingsLoader
@@ -334,6 +358,7 @@ ShellRoot {
                         Repeater {
                             model: Settings.values.workspaces
                             Rectangle {
+                                id: workspaceButton
                                 required property int index
                                 readonly property int workspaceId: index + 1
                                 readonly property bool selected: Number(bar.monitor?.activeWorkspace?.id ?? -1) === workspaceId || (bar.screen?.name === Hyprland.focusedMonitor?.name && Number(Hyprland.focusedWorkspace?.id ?? -1) === workspaceId)
@@ -367,7 +392,7 @@ ShellRoot {
                                     font.weight: Font.DemiBold
                                     color: parent.selected ? Theme.primaryText : parent.occupied ? Theme.surfaceText : Theme.surfaceVariantText
                                 }
-                                MouseArea { id: area; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: parent.activate() }
+                                MouseArea { id: area; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onPressed: workspaceButton.focus = false; onClicked: workspaceButton.activate() }
                             }
                         }
                     }
@@ -388,20 +413,13 @@ ShellRoot {
                         label: bar.width > 1700 ? metrics.elidedText : ""
                         interactive: true
                         hint: [mediaService.player?.trackTitle || mediaService.player?.identity, mediaService.player?.trackArtist].filter(Boolean).join(" · ")
-                        onClicked: root.togglePanel("media", bar.screen)
-                        NowPlaying {
-                            anchor.item: mediaChip.visible ? mediaChip : left
-                            service: mediaService
-                            opened: root.activePanel === "media" && root.panelScreen === bar.screen
-                            onDismissed: root.activePanel = ""
-                        }
+                        onClicked: root.toggleControlTab("media", bar.screen)
                         TextMetrics { id: metrics; font.family: Theme.fontFamily; font.pixelSize: Theme.labelSize; font.weight: Font.Medium; text: mediaService.player?.trackTitle || mediaService.player?.identity || ""; elide: Text.ElideRight; elideWidth: Theme.mediaBarWidth }
                     }
                 }
                 Chip {
                     anchors.centerIn: parent
-                    icon: "calendar_today"
-                    label: Qt.formatDateTime(clock.date, Settings.values.clock24 ? "MM/dd ddd  HH:mm" : "MM/dd ddd  h:mm AP")
+                    label: Qt.formatDateTime(clock.date, "yyyy/MM/dd HH:mm")
                     foreground: Theme.surfaceText
                     hint: Qt.formatDateTime(clock.date, "yyyy年M月d日 dddd")
                 }
@@ -413,13 +431,13 @@ ShellRoot {
                     Chip { visible: Settings.values.showCpu && bar.width > 1700; icon: "memory"; label: root.stats.cpu + "%"; hint: "CPU使用率" }
                     Chip { visible: Settings.values.showMemory && bar.width > 1700; icon: "storage"; label: root.stats.memory + "%"; hint: "メモリ使用率" }
                     Rectangle { visible: (Settings.values.showCpu || Settings.values.showMemory) && bar.width > 1700; Layout.preferredWidth: 1; Layout.preferredHeight: 16; color: Theme.outlineVariant }
-                    Chip { visible: Settings.values.showNetwork && bar.width > 1500; icon: root.stats.networkIcon; label: root.stats.network; hint: "ネットワーク接続" }
+                    Chip { visible: Settings.values.showNetwork && bar.width > 1500; icon: root.stats.networkIcon; label: root.stats.network; interactive: true; hint: "ネットワーク接続"; onClicked: root.toggleControlTab("network", bar.screen) }
                     Chip {
                         icon: root.volumeIcon(root.sink?.audio?.volume ?? 0, root.sink?.audio?.muted ?? false)
                         label: root.sink?.audio ? (root.sink.audio.muted ? "ミュート" : Math.round(root.sink.audio.volume * 100) + "%") : "—"
                         interactive: true
                         hint: "オーディオ設定・スクロールで音量調整"
-                        onClicked: root.togglePanel("audio", bar.screen)
+                        onClicked: root.toggleControlTab("audio", bar.screen)
                         onScrolled: delta => { if (!root.sink?.audio) return; root.sink.audio.volume = Math.max(0, Math.min(1, root.sink.audio.volume + (delta > 0 ? 0.05 : -0.05))); }
                     }
                     Chip {
@@ -429,7 +447,7 @@ ShellRoot {
                         hint: "バッテリー残量"
                         foreground: (root.stats.battery?.percentage ?? 100) < 20 ? Theme.error : Theme.surfaceVariantText
                     }
-                    Chip { visible: bar.width > 1100; icon: "wallpaper"; interactive: true; hint: "壁紙を選択"; onClicked: root.toggleWallpaper(bar.screen) }
+                    Chip { visible: bar.width > 1100; icon: "wallpaper"; interactive: true; hint: "壁紙と配色"; onClicked: root.toggleWallpaper(bar.screen) }
                     Repeater {
                         model: Settings.values.showTray && bar.width > 1100 ? SystemTray.items.values : []
                         Rectangle {
@@ -459,10 +477,11 @@ ShellRoot {
                             BarTooltip { target: trayButton; text: trayButton.modelData.tooltipTitle || trayButton.modelData.title; active: trayArea.containsMouse }
                         }
                     }
-                    Chip { icon: Settings.values.dnd ? "notifications_off" : "notifications"; interactive: true; hint: "通知"; onClicked: root.togglePanel("notifications", bar.screen) }
-                    Chip { visible: bar.width > 1400; icon: "content_paste"; interactive: true; hint: "クリップボード"; onClicked: root.togglePanel("clipboard", bar.screen) }
-                    Chip { visible: bar.width > 1400; icon: "screenshot_monitor"; interactive: true; hint: "スクリーンショット"; onClicked: root.togglePanel("capture", bar.screen) }
-                    Chip { icon: "settings"; interactive: true; hint: "設定"; onClicked: root.togglePanel("settings", bar.screen) }
+                    Chip { icon: Settings.values.dnd ? "notifications_off" : "notifications"; interactive: true; hint: "通知"; onClicked: root.toggleControlTab("notifications", bar.screen) }
+                    Chip { icon: "tune"; interactive: true; hint: "コントロールパネル"; onClicked: root.toggleControlTab("quick", bar.screen) }
+                    Chip { visible: bar.width > 1400; icon: "content_paste"; interactive: true; hint: "クリップボード"; onClicked: root.toggleControlTab("clipboard", bar.screen) }
+                    Chip { visible: bar.width > 1400; icon: "screenshot_monitor"; interactive: true; hint: "スクリーンショット"; onClicked: root.toggleControlTab("capture", bar.screen) }
+                    Chip { icon: "settings"; interactive: true; hint: "設定"; onClicked: root.toggleControlTab("settings", bar.screen) }
                     Chip { icon: "power_settings_new"; interactive: true; hint: "セッションメニュー"; onClicked: root.togglePanel("session", bar.screen) }
                 }
             }

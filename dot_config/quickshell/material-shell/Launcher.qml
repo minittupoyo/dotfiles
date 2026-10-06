@@ -79,7 +79,7 @@ PanelFrame {
                 MaterialIcon { anchors.centerIn: parent; name: "close" }
                 Keys.onReturnPressed: launcher.dismissed()
                 Keys.onSpacePressed: launcher.dismissed()
-                MouseArea { id: closeArea; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: launcher.dismissed() }
+                MouseArea { id: closeArea; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onPressed: parent.focus = false; onClicked: launcher.dismissed() }
             }
         }
         SearchField {

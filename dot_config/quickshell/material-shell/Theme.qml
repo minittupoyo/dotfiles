@@ -16,7 +16,7 @@ QtObject {
                     typeof data.colors[key] === "string" && /^#[0-9a-fA-F]{6}$/.test(data.colors[key])))
                 throw new Error("Incomplete palette");
             const next = Object.assign({}, data.colors);
-            ["on_primary", "primary_container", "on_primary_container"].forEach(key => {
+            ["outline", "on_primary", "primary_container", "on_primary_container", "on_error", "error_container", "on_error_container"].forEach(key => {
                 if (next[key] !== undefined && (typeof next[key] !== "string" || !/^#[0-9a-fA-F]{6}$/.test(next[key]))) throw new Error("Invalid expressive color");
             });
             palette = next;
@@ -31,9 +31,31 @@ QtObject {
     readonly property int space16: 16
     readonly property int space24: 24
     readonly property int space32: 32
-    readonly property int bodySize: 14
-    readonly property int inputSize: 16
-    readonly property int titleSize: 22
+    readonly property int displayLargeSize: 57
+    readonly property int headlineSmallSize: 24
+    readonly property int titleLargeSize: 22
+    readonly property int titleMediumSize: 16
+    readonly property int titleSmallSize: 14
+    readonly property int bodyLargeSize: 16
+    readonly property int bodyMediumSize: 14
+    readonly property int bodySmallSize: 12
+    readonly property int labelLargeSize: 14
+    readonly property int labelMediumSize: 12
+    readonly property int labelSmallSize: 11
+    readonly property int displayLargeLineHeight: 64
+    readonly property int headlineSmallLineHeight: 32
+    readonly property int titleLargeLineHeight: 28
+    readonly property int titleMediumLineHeight: 24
+    readonly property int titleSmallLineHeight: 20
+    readonly property int bodyLargeLineHeight: 24
+    readonly property int bodyMediumLineHeight: 20
+    readonly property int bodySmallLineHeight: 16
+    readonly property int labelLargeLineHeight: 20
+    readonly property int labelMediumLineHeight: 16
+    readonly property int labelSmallLineHeight: 16
+    readonly property int bodySize: bodyMediumSize
+    readonly property int inputSize: bodyLargeSize
+    readonly property int titleSize: titleLargeSize
     readonly property int iconSize: 20
     readonly property int appIconSize: 28
     readonly property int shapeSmall: 8
@@ -48,6 +70,7 @@ QtObject {
     readonly property color scrim: "#52000000"
     readonly property color surfaceText: palette.on_surface || "#e2e3dc"
     readonly property color surfaceVariantText: palette.on_surface_variant || "#c3c8bd"
+    readonly property color outline: palette.outline || "#8e9387"
     readonly property color outlineVariant: palette.outline_variant || "#43483f"
     readonly property color primary: palette.primary || "#b4cea5"
     readonly property color primaryText: palette.on_primary || surface
@@ -56,6 +79,9 @@ QtObject {
     readonly property color secondaryContainer: palette.secondary_container || "#3c4b37"
     readonly property color secondaryContainerText: palette.on_secondary_container || "#d8e7cc"
     readonly property color error: palette.error || "#ffb4ab"
+    readonly property color errorText: palette.on_error || "#690005"
+    readonly property color errorContainer: palette.error_container || "#93000a"
+    readonly property color errorContainerText: palette.on_error_container || "#ffdad6"
     readonly property color inverseSurface: palette.inverse_surface || "#e2e3dc"
     readonly property color inverseSurfaceText: palette.inverse_on_surface || "#2f322c"
 
@@ -69,6 +95,9 @@ QtObject {
     readonly property int popupRadius: 24
     readonly property int pressedRadius: 8
     readonly property int mediaActionWidth: 64
+    readonly property int mediaEmptyContainerSize: 80
+    readonly property int mediaEmptySymbolSize: 36
+    readonly property int mediaEmptyContentWidth: 320
     readonly property int sessionPanelHeight: 208
     readonly property int sessionConfirmHeight: 280
     readonly property int sessionActionWidth: 88
@@ -77,6 +106,14 @@ QtObject {
     readonly property int sessionActionLabelSize: 12
     readonly property int sessionActionLabelHeight: 16
     readonly property int sessionActionSpacing: space8
+    readonly property int quickSettingTileHeight: 72
+    readonly property int quickSettingIconSize: 24
+    readonly property int quickSettingsWidth: 560
+    readonly property int quickSettingsHeight: 680
+    readonly property int quickTabWidth: 72
+    readonly property int quickTabHeight: 56
+    readonly property int quickTabIndicatorWidth: 56
+    readonly property int quickTabIndicatorHeight: 32
     readonly property real motionSpring: 4
     readonly property real motionDamping: 0.85
     readonly property real motionEpsilon: 0.1

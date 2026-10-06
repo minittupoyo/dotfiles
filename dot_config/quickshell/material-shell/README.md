@@ -5,13 +5,14 @@ Hyprland向けQuickshellステータスバー。全モニターの上端に表�
 アイコンはFILL 0・weight 400・grade 0・optical size 24に統一し、バーでは16px、パネルでは20pxで表示します。
 既存の起動名 `material-shell` は維持しています。
 
-表示: ワークスペース1〜5、アクティブウィンドウ名、日時、CPU・メモリ使用率、ネットワーク、音量。バッテリー搭載時は残量も表示します。
+表示: ワークスペース1〜5、アクティブウィンドウ名、`yyyy/MM/dd HH:mm`形式の日時、CPU・メモリ使用率、ネットワーク、音量。バッテリー搭載時は残量も表示します。
 
 操作:
 - 左端・Super+Space: 独自ランチャー（検索・上下キー・Enter・Esc）
 - ワークスペース: クリックで切り替え
-- 音量: クリックでオーディオ設定、スクロールで5%ずつ変更
-- 設定・電源: 独自の設定とセッションメニュー
+- 音量: クリックでコントロールパネルの音声タブ、スクロールで5%ずつ変更
+- 曲名、ネットワーク、通知、クリップボード、撮影、設定: コントロールパネルの該当タブ
+- 電源: 独自セッションメニュー。壁紙アイコンは壁紙セレクターを直接開きます
 
 起動: `~/.config/quickshell/material-shell/start.sh`
 自動起動は `~/.config/hypr/hyprland.lua` に追加済みです。
@@ -25,6 +26,7 @@ Noctaliaの自動起動は撤去済み。通知・トレイ・クリップボー
 
 必要環境: Quickshell 0.3.1、Hyprland、Python 3、NetworkManager（nmcli）、PipeWire、
 awww、Matugen、grim、slurp、wl-clipboard、cliphist、swayidle、oxipng。
+Wi-Fi接続にはNetworkManager (nmcli)、Bluetoothにはbluetoothctlが必要です。接続タブからWi-Fiネットワークの検索・接続・切断、Bluetooth機器の検索・ペア設定・接続・登録解除を操作できます。未導入またはアダプターがない場合は該当操作を無効にします。
 外部コマンドはユーザー領域 `~/.local/bin`へ導入済みです。
 
 色・高さ・文字サイズはTheme.qmlで管理します。
@@ -145,14 +147,32 @@ python3 ~/.config/quickshell/material-shell/tests/test_wallpaper_backend.py
 | Print / Shift+Print | 全ディスプレイ / 範囲キャプチャ |
 
 各パネルはEsc・外側クリックで閉じます。トレイは左クリックで起動、右クリックで独自メニュー。
+機能アイコンはコントロールパネルを開き、対応するタブを選択します。バーの調整アイコンはクイックタブを開きます。
+タブはアイコンとラベルを表示し、横スクロールできます。壁紙セレクター、ランチャー、セッション、トレイはそれぞれ専用UIです。
+
+| バーの入口 | 開く場所 |
+|---|---|
+| 調整 | クイック |
+| ネットワーク | 接続 |
+| 音量 | 音声 |
+| 曲名 | メディア |
+| 通知 | 通知 |
+| 壁紙 | 壁紙セレクター |
+| 設定 | 設定 |
+| クリップボード | 履歴 |
+| スクリーンショット | 撮影 |
+
+`audio`、`media`、`notifications`、`settings`、`clipboard`、`capture`のIPCターゲットは対応タブを開きます。
+クイック・接続は `quickshell ipc -c material-shell call control tab quick` のように `control tab` から開けます。明るさはクイックタブにあります。旧 `display` タブ指定は互換のためクイックへ移動します。
 通知は置換・期限・アクション・履歴・DNDに対応。本文はプレーンテキストです。
 クリップボードはテキスト・画像を最大100件保存し、検索・再コピー・個別削除できます。
 従来のNoctalia履歴はそのまま保存し、新しい履歴は独立したデータベースを使います。
-Printキーとキャプチャパネルから現在のディスプレイ・全ディスプレイ・範囲を撮影できます。範囲は独立プログラム `~/.local/bin/material-screenshot` がslurpを直接起動し、ドラッグして離すと撮影、Escでキャンセルします。撮影後はoxipngでロスレス最適化し、ファイルサイズが小さくなった場合だけ採用します。最適化後のPNGを `~/Pictures/Screenshots`へ保存してクリップボードにもコピーします。
+Printキーとコントロールパネルの撮影タブから現在のディスプレイ・全ディスプレイ・範囲を撮影できます。範囲は独立プログラム `~/.local/bin/material-screenshot` がslurpを直接起動し、ドラッグして離すと撮影、Escでキャンセルします。撮影後はoxipngでロスレス最適化し、ファイルサイズが小さくなった場合だけ採用します。最適化後のPNGを `~/Pictures/Screenshots`へ保存してクリップボードにもコピーします。
 音量・ミュート・明るさの変更でOSDを表示します（明るさはバックライト搭載時）。
+コントロールパネルにクイック・接続・音声・メディア・通知・設定・クリップボード・撮影のタブをまとめています。明るさ調整と壁紙/配色の入口はクイックにあります。バーの壁紙アイコンは専用セレクターを直接開きます。ランチャー・セッション・トレイ・壁紙セレクターは専用UIを使います。
 曲が変わるとアルバムアート、曲名、アーティストを含むメディアOSDを4秒間表示します。
 
-設定: `~/.config/material-shell/settings.json`。表示項目、時計形式、ワークスペース数、
+設定: `~/.config/material-shell/settings.json`。表示項目、ワークスペース数、
 DND、OSD、自動ロック・消灯時間を変更できます。初期状態は自動ロック・消灯とも無効です。
 設定は保存時に検証し、不正な変更では直前の値を保持します。
 状態: `~/.local/state/material-shell/notifications.json`、`clipboard.db`、`wallpaper.json`、`palette.json`。
@@ -168,6 +188,9 @@ XDG_CONFIG_HOME / XDG_STATE_HOMEに対応します。
 ```sh
 python3 ~/.config/quickshell/material-shell/tests/test_settings_session.py
 python3 ~/.config/quickshell/material-shell/tests/test_capture.py
+python3 ~/.config/quickshell/material-shell/tests/test_controls.py
+python3 ~/.config/quickshell/material-shell/tests/live_controls.py
+python3 ~/.config/quickshell/material-shell/tests/live_media.py
 python3 ~/.config/quickshell/material-shell/tests/preview_lock.py
 python3 ~/.config/quickshell/material-shell/tests/live_settings.py
 python3 ~/.config/quickshell/material-shell/tests/live_session.py
@@ -177,24 +200,24 @@ dbus-run-session -- env MATERIAL_NOTIFICATION_TEST_PRIVATE=1 python3 ~/.config/q
 トレイ検証 `tests/live_tray.py`もプライベートD-Busを使用します。テスト専用にPyGObjectが必要です。
 セッションテストは模擬バックエンド、ロック検証は通常ウィンドウのプレビューで行います。
 
-## オーディオ設定
+## コントロールパネルの音声タブ
 
-バーの音量アイコン、または設定画面の「オーディオ」で開きます。
+バーの音量アイコン、またはコントロールパネルの「音声」タブで操作します。
 出力とマイク入力それぞれの音量（0〜100%）・ミュート・既定デバイスを操作できます。
 音量は即時反映。スライダーは左右キーで5%、Home/Endで最小/最大、Escで閉じます。
 機器の追加・削除と外部からの音量変更に追従します。
 接続先の選択はPipeWireのpreferredDefaultAudioSink/Sourceを使用します。
 公式API: https://quickshell.org/docs/v0.3.1/types/Quickshell.Services.Pipewire/Pipewire/
 
-IPC: `quickshell ipc -c material-shell call audio toggle`。
+IPC: `quickshell ipc -c material-shell call audio toggle`。音声アイコンからも同じタブを開きます。
 安全な操作テスト: `python3 ~/.config/quickshell/material-shell/tests/live_audio.py`。
 両画面でEsc・外側クリック・デバイス一覧・模擬スライダーのキーボード操作を確認しました。
 実際の音量・ミュート・既定デバイスはテストで変更していません。
 
-## Now Playing
+## コントロールパネルのメディアタブ
 
-MPRIS対応プレイヤーがある場合、バー左側に曲名を表示します。クリック、設定画面の
-「Now Playing」、`quickshell ipc -c material-shell call media toggle`からパネルを開けます。
+MPRIS対応プレイヤーがある場合、バー左側に曲名を表示します。クリック、コントロールパネルのメディアタブ、
+`quickshell ipc -c material-shell call media toggle`から操作画面を開けます。
 アートワーク・曲名・アーティスト・アルバム、前/次、再生/一時停止、シーク、プレイヤー選択に対応。
 非対応操作は無効化。再生位置は波形プログレスで表示します（表示専用）。
 再生中を自動優先し、手動選択したプレイヤーは終了まで維持します。
@@ -204,9 +227,7 @@ MPRIS対応プレイヤーがある場合、バー左側に曲名を表示しま
 実機でもMPRISプレイヤーの接続と再生中状態を確認しました。実アプリの再生操作は未検証です。
 公式API: https://quickshell.org/docs/v0.3.1/types/Quickshell.Services.Mpris/MprisPlayer/
 
-Now Playingは曲名チップ直下の幅400pxのポップオーバーです。背景を暗転させず、
-内容に応じて高さを調整します。Esc・外側クリックで閉じます。設定/IPCからも対象画面のバーに接続して開きます。
-外側クリックの検出にはHyprlandFocusGrabを使用します。
+メディア画面はコントロールパネル内のタブです。曲名チップとメディアIPCは同じタブを開きます。
 
 ## Material 3 Expressive
 

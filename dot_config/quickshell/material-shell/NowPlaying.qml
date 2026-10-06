@@ -62,7 +62,45 @@ PopupWindow {
             ColumnLayout {
                 id: contents
                 width: parent.width; spacing: Theme.space16
-                Text { visible: !panel.player; Layout.fillWidth: true; text: "再生プレイヤーがありません"; color: Theme.surfaceVariantText; font.family: Theme.fontFamily; font.pixelSize: Theme.bodySize }
+                Item {
+                    objectName: "mediaEmptyState"
+                    visible: !panel.player
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    Layout.minimumHeight: Theme.space32 * 4
+                    ColumnLayout {
+                        anchors.centerIn: parent
+                        width: Math.min(parent.width, Theme.mediaEmptyContentWidth)
+                        spacing: Theme.space12
+                        Rectangle {
+                            Layout.alignment: Qt.AlignHCenter
+                            width: Theme.mediaEmptyContainerSize
+                            height: width
+                            radius: width / 2
+                            color: Theme.secondaryContainer
+                            MaterialIcon { anchors.centerIn: parent; name: "music_note"; size: Theme.mediaEmptySymbolSize; color: Theme.secondaryContainerText }
+                        }
+                        Text {
+                            Layout.fillWidth: true
+                            text: "再生中のメディアはありません"
+                            color: Theme.surfaceText
+                            font.family: Theme.fontFamily
+                            font.pixelSize: Theme.titleMediumSize
+                            font.weight: Font.Medium
+                            horizontalAlignment: Text.AlignHCenter
+                            wrapMode: Text.Wrap
+                        }
+                        Text {
+                            Layout.fillWidth: true
+                            text: "音楽や動画を再生すると、曲名や操作ボタンがここに表示されます。"
+                            color: Theme.surfaceVariantText
+                            font.family: Theme.fontFamily
+                            font.pixelSize: Theme.bodySize
+                            horizontalAlignment: Text.AlignHCenter
+                            wrapMode: Text.Wrap
+                        }
+                    }
+                }
                 Rectangle {
                     visible: !!panel.player; Layout.alignment: Qt.AlignHCenter
                     Layout.preferredWidth: Theme.mediaArtworkSize; Layout.preferredHeight: Theme.mediaArtworkSize

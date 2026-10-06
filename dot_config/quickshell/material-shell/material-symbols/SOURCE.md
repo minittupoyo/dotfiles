@@ -4,3 +4,4 @@ FILL 0 / weight 400 / grade 0 / optical size 24.
 SVG root fill adapted to the bar theme. Apache-2.0; see LICENSE.
 
 SVGのfillは白いマスクに置換し、MaterialIcon.qmlでThemeの色へ動的着色する。
+`bluetooth.svg` と `tune.svg` も同じリビジョンの `symbols/web/{name}/materialsymbolsoutlined/{name}_24px.svg` から取得。

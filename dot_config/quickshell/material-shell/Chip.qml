@@ -49,6 +49,7 @@ Rectangle {
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: chip.interactive ? Qt.PointingHandCursor : Qt.ArrowCursor
+        onPressed: chip.focus = false
         onClicked: if (chip.interactive) chip.clicked()
         onWheel: wheel => { if (chip.interactive) chip.scrolled(wheel.angleDelta.y); }
     }

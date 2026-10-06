@@ -60,7 +60,7 @@ PanelFrame {
                                     Text { Layout.fillWidth: true; text: device.modelData.description || device.modelData.name; textFormat: Text.PlainText; elide: Text.ElideRight; color: device.selected ? Theme.secondaryContainerText : Theme.surfaceText; font.family: Theme.fontFamily; font.pixelSize: Theme.bodySize }
                                     MaterialIcon { name: "check"; visible: device.selected; color: Theme.secondaryContainerText }
                                 }
-                                MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: device.choose() }
+                                MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onPressed: device.focus = false; onClicked: device.choose() }
                             }
                         }
                     }

@@ -65,6 +65,7 @@ Rectangle {
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
+        onPressed: action.focus = false
         onClicked: action.clicked()
     }
 }

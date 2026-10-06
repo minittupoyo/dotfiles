@@ -90,7 +90,7 @@ PanelFrame {
         RowLayout {
             Layout.fillWidth: true
             Text { Layout.fillWidth: true; text: "↑ ↓ 選択 · Enter コピー · Esc 閉じる"; color: Theme.surfaceVariantText; font.family: Theme.fontFamily; font.pixelSize: Theme.labelSize }
-            ShellButton { text: "削除"; enabled: panel.results.length > 0 && !worker.running; onClicked: panel.operate("delete", panel.results[panel.selectedIndex]?.id) }
+            ShellButton { text: "削除"; destructive: true; enabled: panel.results.length > 0 && !worker.running; onClicked: panel.operate("delete", panel.results[panel.selectedIndex]?.id) }
         }
     }
 }

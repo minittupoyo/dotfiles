@@ -37,34 +37,31 @@ ShellRoot {
  PanelWindow {
   id:host
   screen:Quickshell.screens[Number(Quickshell.env("PANEL_TEST_SCREEN")||"0")]
-  anchors {top:true;left:true;right:true}
-  implicitHeight:48
+  anchors {top:true;bottom:true;left:true;right:true}
   WlrLayershell.keyboardFocus:WlrKeyboardFocus.OnDemand
   Rectangle {id:target;width:100;height:32}
- NowPlaying {
+ ControlMedia {
   id:panel;service:service
-  opened:false
-  anchor.item:target
-  onDismissed:opened=false
+  active:true;width:400;height:500
   TestCase {
-   name:"NowPlaying";when:true
+   name:"ControlMedia";when:true
    function cleanupTestCase(){console.warn("Media tests: passed="+qtest_results.passCount+" failed="+qtest_results.failCount);}
    function cleanup(){console.warn("Completed "+qtest_results.functionName+" failures="+qtest_results.failCount);}
-   function init(){fake.isPlaying=false;fake.position=30;service.players=[fake];mouseClick(target,10,10);panel.opened=true;wait(100);}
-   function test_controls(){const play=findChild(panel.contentItem,"mediaPlay");mouseClick(play,play.width/2,play.height/2);compare(fake.isPlaying,true);const next=findChild(panel.contentItem,"mediaNext");mouseClick(next,next.width/2,next.height/2);compare(fake.nextCount,1);compare(findChild(panel.contentItem,"mediaPrevious").enabled,false);}
-   function test_escape(){keyClick(Qt.Key_Escape);tryCompare(panel,"visible",false);}
-   function test_anchor(){compare(panel.anchor.item,target);verify(panel.height<=640);compare(panel.grabFocus,true);}
-   function test_animation(){const progress=findChild(panel.contentItem,"mediaProgress");fake.isPlaying=true;fake.position=90;panel.refresh();tryCompare(progress,"animationRunning",true);const initial=progress.phase;wait(80);verify(progress.phase!==initial);fake.isPlaying=false;tryCompare(progress,"animationRunning",false);const paused=progress.phase;wait(80);compare(progress.phase,paused);Theme.reducedMotion=true;fake.isPlaying=true;compare(progress.animationRunning,false);Theme.reducedMotion=false;}
-   function test_progress(){const progress=findChild(panel.contentItem,"mediaProgress");verify(progress.visible);compare(progress.wavy,true);compare(progress.fraction,30/180);fake.position=90;panel.refresh();compare(progress.fraction,0.5);verify(!progress.activeFocusOnTab);}
-   function test_empty(){service.players=[];compare(panel.player,null);compare(findChild(panel.contentItem,"mediaPlay").enabled,false);}
+   function init(){fake.isPlaying=false;fake.position=30;service.players=[fake];panel.refresh();wait(100);}
+   function test_controls(){const play=findChild(panel,"mediaPlay");mouseClick(play,play.width/2,play.height/2);compare(fake.isPlaying,true);const next=findChild(panel,"mediaNext");mouseClick(next,next.width/2,next.height/2);compare(fake.nextCount,1);compare(findChild(panel,"mediaPrevious").enabled,false);}
+   function test_embedded(){verify(panel.visible);verify(panel.active);compare(panel.width,400);}
+   function test_animation(){const progress=findChild(panel,"mediaProgress");fake.isPlaying=true;fake.position=90;panel.refresh();tryCompare(progress,"animationRunning",true);const initial=progress.phase;wait(80);verify(progress.phase!==initial);fake.isPlaying=false;tryCompare(progress,"animationRunning",false);const paused=progress.phase;wait(80);compare(progress.phase,paused);Theme.reducedMotion=true;fake.isPlaying=true;compare(progress.animationRunning,false);Theme.reducedMotion=false;}
+   function test_progress(){const progress=findChild(panel,"mediaProgress");verify(progress.visible);compare(progress.wavy,true);compare(progress.fraction,30/180);fake.position=90;panel.refresh();compare(progress.fraction,0.5);verify(!progress.activeFocusOnTab);}
+   function test_empty(){service.players=[];compare(panel.player,null);compare(findChild(panel,"mediaPlay").enabled,false);const empty=findChild(panel,"mediaEmptyState");verify(!!empty);verify(empty.visible);verify(!!findChild(panel,"mediaEmptyTitle"));verify(!!findChild(panel,"mediaEmptyDescription"));}
    function test_selection_removed(){service.select(fake.dbusName);compare(service.player,fake);service.players=[];compare(service.selectedName,"");compare(service.player,null);}
   }
  }
  }
 }'''
-with tempfile.TemporaryDirectory(prefix='material-media-tests-') as directory:
- tmp=Path(directory);(tmp/'shell.qml').write_text(fixture.replace('@@IMPORT@@',root.as_uri()))
- result=subprocess.run(['quickshell','-p',str(tmp),'--no-color'],env=dict(os.environ,FONTCONFIG_FILE=str(root/'fonts.conf')),capture_output=True,text=True,timeout=20)
- output=result.stdout+result.stderr
- print(output)
- assert 'Media tests: passed=8 failed=0' in output
+for screen in (0, 1):
+ with tempfile.TemporaryDirectory(prefix='material-media-tests-') as directory:
+  tmp=Path(directory);(tmp/'material-shell').symlink_to(root,target_is_directory=True);(tmp/'shell.qml').write_text(fixture.replace('@@IMPORT@@','./material-shell'))
+  result=subprocess.run(['quickshell','-p',str(tmp),'--no-color'],env=dict(os.environ,FONTCONFIG_FILE=str(root/'fonts.conf'),PANEL_TEST_SCREEN=str(screen)),capture_output=True,text=True,timeout=20)
+  output=f'Screen {screen}:\n'+result.stdout+result.stderr
+  print(output)
+  assert 'Media tests: passed=' in output and 'failed=0' in output

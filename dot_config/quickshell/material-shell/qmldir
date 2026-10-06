@@ -22,6 +22,13 @@ Osd 1.0 Osd.qml
 CapturePanel 1.0 CapturePanel.qml
 VolumeSlider 1.0 components/VolumeSlider.qml
 AudioPanel 1.0 AudioPanel.qml
+ControlPanel 1.0 ControlPanel.qml
+ControlNetwork 1.0 ControlNetwork.qml
+ControlMedia 1.0 ControlMedia.qml
+ControlTab 1.0 ControlTab.qml
+ControlTile 1.0 ControlTile.qml
+ControlClipboard 1.0 ControlClipboard.qml
+ControlCapture 1.0 ControlCapture.qml
 MediaService 1.0 MediaService.qml
 NowPlaying 1.0 NowPlaying.qml
 ExpressiveProgress 1.0 components/ExpressiveProgress.qml

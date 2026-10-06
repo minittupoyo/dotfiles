@@ -68,7 +68,7 @@ PanelFrame {
             Layout.fillWidth: true
             Item { Layout.fillWidth: true }
             ShellButton { text: "キャンセル"; enabled: !panel.executing; onClicked: panel.pendingAction = "" }
-            ShellButton { text: panel.executing ? "実行中…" : panel.pendingLabel; emphasized: true; enabled: !panel.executing; onClicked: panel.execute() }
+            ShellButton { text: panel.executing ? "実行中…" : panel.pendingLabel; emphasized: true; destructive: ["logout", "reboot", "poweroff"].includes(panel.pendingAction); enabled: !panel.executing; onClicked: panel.execute() }
         }
     }
 }
