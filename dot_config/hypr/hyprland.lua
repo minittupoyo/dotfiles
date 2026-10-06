@@ -30,6 +30,13 @@ hl.monitor({
     scale    = "auto",
 })
 
+hl.monitor({
+    output   = "DP-3",
+    mode     = "2560x1440@75",
+    position = "2560x0",
+    scale    = "auto",
+})
+
 
 ---------------------
 ---- MY PROGRAMS ----
@@ -65,7 +72,9 @@ end)
 
 hl.env("XCURSOR_SIZE", "24")
 hl.env("HYPRCURSOR_SIZE", "24")
-
+hl.env("LIBVA_DRIVER_NAME", "nvidia")
+hl.env("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
+hl.env("NVD_BACKEND", "direct")
 
 -----------------------
 ----- PERMISSIONS -----

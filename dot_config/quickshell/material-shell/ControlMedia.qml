@@ -92,6 +92,13 @@ Item {
             Layout.fillWidth: true
             animationEnabled: page.active && (page.player?.isPlaying ?? false)
             value: page.player?.length > 0 ? page.position / page.player.length : 0
+            interactive: !!page.player && !!page.player.canSeek && !!page.player.positionSupported && !!page.player.lengthSupported && page.player.length > 0
+            onAdjusted: fraction => {
+                if (!page.player || !page.player.canSeek || !page.player.positionSupported || !page.player.lengthSupported) return;
+                const target = Math.max(0, Math.min(page.player.length, fraction * page.player.length));
+                page.player.position = target;
+                page.refresh();
+            }
             Accessible.name: "再生位置"
         }
         RowLayout {

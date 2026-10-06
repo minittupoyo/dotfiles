@@ -8,7 +8,10 @@ import QtQuick.Layouts
 
 ShellRoot {
     id: root
-    Component.onCompleted: Theme.reducedMotion = Quickshell.env("MATERIAL_SHELL_REDUCED_MOTION") === "1"
+    Component.onCompleted: {
+        Theme.reducedMotion = Quickshell.env("MATERIAL_SHELL_REDUCED_MOTION") === "1";
+        Theme.setMode(Settings.values.themeMode || "dark");
+    }
     property string activePanel: ""
     readonly property string cliDir: Quickshell.env("MATERIAL_SHELL_CLI_DIR") || ((Quickshell.env("HOME") || "") + "/.local/bin")
     property var panelScreen: Quickshell.screens[0] ?? null
@@ -193,6 +196,7 @@ ShellRoot {
     }
     Connections {
         target: Settings
+        function onValuesChanged() { Theme.setMode(Settings.values.themeMode || "dark"); }
         function onSaveRequested(data) { settingsSaver.command = [root.cliDir + "/material-settings", "set", JSON.stringify(data)]; settingsSaver.running = true; }
     }
     Process {
@@ -298,7 +302,7 @@ ShellRoot {
     }
     IpcHandler {
         target: "theme"
-        function status(): string { return JSON.stringify({path: Theme.palettePath, colors: Theme.palette}); }
+        function status(): string { return JSON.stringify({path: Theme.palettePath, mode: Theme.mode, schemes: Object.keys(Theme.schemes), colors: Theme.palette}); }
     }
     readonly property var sink: Pipewire.defaultAudioSink
     PwObjectTracker { objects: root.sink ? [root.sink] : [] }

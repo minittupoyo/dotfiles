@@ -29,7 +29,7 @@ def sample(once=False):
             devices = command(['nmcli', '-t', '-f', 'TYPE,STATE', 'device']).splitlines()
             wifi = any(line == 'wifi:connected' for line in devices)
             wired = any(line == 'ethernet:connected' for line in devices)
-            network = {'network': 'Wi-Fi' if wifi else 'Ethernet' if wired else 'オフライン', 'networkIcon': 'wifi' if wifi else 'lan' if wired else 'wifi_off'}
+            network = {'network': 'Wi-Fi' if wifi else 'Ethernet' if wired else 'オフライン', 'networkIcon': 'wifi' if wifi else 'settings_ethernet' if wired else 'wifi_off'}
         batteries = []
         for device in pathlib.Path('/sys/class/power_supply').glob('*'):
             try:

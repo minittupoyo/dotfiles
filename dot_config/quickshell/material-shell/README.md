@@ -32,7 +32,7 @@ Wi-Fi接続にはNetworkManager (nmcli)、Bluetoothにはbluetoothctlが必要�
 色・高さ・文字サイズはTheme.qmlで管理します。
 フォントはInterを優先し、日本語はNoto Sans JPにフォールバックします（Theme.qml、fonts.conf）。
 start.shでバー専用のFONTCONFIG_FILEを指定し、他アプリのフォント設定には影響しません。
-Material 3 Expressiveをデスクトップ向けに適用しています。壁紙由来のダーク配色と意味を持つ色ロールを共用します。
+Material 3 Expressiveをデスクトップ向けに適用しています。壁紙由来のライト/ダーク配色を生成し、意味を持つ色ロールを共用します。
 バーは全幅のフラットな面、選択中のワークスペースはPrimary / On Primaryで表示します。
 ツールチップはMaterial 3のPlain Tooltipに合わせ、Inverse Surface・4px角丸・影なしにしています。
 色・形状・文字サイズの共通トークンはTheme.qmlで変更できます。
@@ -72,7 +72,7 @@ live_launcher.pyは検証用の一時desktop entryを作り、実際のパネル
 ## 壁紙とMatugenパレット
 
 Matugen 4.2.0を~/.local/bin/matugenに配置（公式リリースのSHA-256を照合）。
-起動時および壁紙変更時にdark / scheme-tonal-spot / contrast 0を生成します。
+起動時および壁紙変更時にlight・dark両方のscheme-tonal-spot / contrast 0を生成します。
 awwwの先頭出力の壁紙を5秒ごとに確認し、変更時のみ生成。2画面とも共通配色です。
 壁紙の描画はawww、保存と復元は`material-wallpaper-backend`が担当します。
 
@@ -85,7 +85,7 @@ material-palette "/path/to/wallpaper.jpg"
 現在の壁紙から生成する場合は引数なし。awww imgで変更した場合も自動追従します。
 パレットは${XDG_STATE_HOME:-~/.local/state}/material-shell/palette.jsonに保存し、
 バー・ランチャー・構造アイコン・入力欄・ツールチップへ再起動せずに反映します。
-生成失敗や不正なJSONでは直前の配色を保持し、初回未生成時はTheme.qmlの固定色を使用。
+設定タブでライト/ダークを選ぶと全画面に即時反映し、選択を保存します。生成失敗や不正なJSONでは直前の配色を保持し、初回未生成時はTheme.qmlの固定色を使用。
 Matugenは--dry-runで呼び出し、他アプリの設定やフックを実行しません。
 
 ```sh

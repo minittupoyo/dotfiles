@@ -7,7 +7,7 @@ import tempfile
 
 CONFIG = Path(os.environ.get('XDG_CONFIG_HOME', str(Path.home() / '.config'))) / 'material-shell/settings.json'
 DEFAULTS = {'showCpu': True, 'showMemory': True, 'showNetwork': True, 'showWindowTitle': True,
-            'showTray': True, 'clock24': True, 'workspaces': 5, 'dnd': False, 'osd': True,
+            'showTray': True, 'clock24': True, 'themeMode': 'dark', 'workspaces': 5, 'dnd': False, 'osd': True,
             'autoLockMinutes': 0, 'screenOffMinutes': 0}
 
 
@@ -16,6 +16,7 @@ def validate(data):
     result = dict(DEFAULTS)
     for key, value in data.items():
         if type(value) is not type(DEFAULTS[key]): raise ValueError('設定の形式が不正です: ' + key)
+        if key == 'themeMode' and value not in ('light', 'dark'): raise ValueError('テーマはlightまたはdarkを指定してください')
         if key == 'workspaces' and not 1 <= value <= 10: raise ValueError('ワークスペース数は1〜10です')
         if key in ('autoLockMinutes', 'screenOffMinutes') and not 0 <= value <= 240: raise ValueError('時間は0〜240分です')
         result[key] = value

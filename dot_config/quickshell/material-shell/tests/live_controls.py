@@ -15,6 +15,7 @@ ShellRoot {
  property int buttonClicks: 0
  property int disabledClicks: 0
  property int tabChoices: 0
+ property real sliderValue: 0.5
  PanelWindow {
   screen: Quickshell.screens[Number(Quickshell.env("PANEL_TEST_SCREEN") || "0")]
   anchors { top: true; bottom: true; left: true; right: true }
@@ -27,12 +28,13 @@ ShellRoot {
    ShellButton { id: disabledButton; objectName: "disabledButton"; text: "無効"; enabled: false; onClicked: disabledClicks++ }
    Toggle { id: toggle; objectName: "expressiveSwitch"; Accessible.name: "テストスイッチ"; onToggled: checked = !checked }
    ControlTab { id: tab; objectName: "audioTab"; name: "audio"; label: "音声"; icon: "volume_up"; onChosen: { tabChoices++; selected = !selected; } }
+   VolumeSlider { id: volumeSlider; objectName: "testVolumeSlider"; width: 300; value: sliderValue; onAdjusted: adjustedValue => sliderValue = adjustedValue }
   }
   TestCase {
    name: "ExpressiveControls"; when: true
    function cleanupTestCase() { console.warn("Controls tests: passed=" + qtest_results.passCount + " failed=" + qtest_results.failCount); }
    function cleanup() { console.warn("Completed " + qtest_results.functionName + " failures=" + qtest_results.failCount); }
-   function init() { buttonClicks = 0; disabledClicks = 0; tabChoices = 0; tonalButton.emphasized = false; disabledButton.enabled = false; toggle.enabled = true; toggle.checked = false; tab.selected = false; Theme.reducedMotion = false; wait(40); }
+   function init() { buttonClicks = 0; disabledClicks = 0; tabChoices = 0; sliderValue = 0.5; volumeSlider.keyboardFocus = false; volumeSlider.focus = false; tonalButton.emphasized = false; disabledButton.enabled = false; toggle.enabled = true; toggle.checked = false; tab.selected = false; Theme.reducedMotion = false; wait(40); }
    function test_button_roles_and_disabled_input() {
     compare(tonalButton.color.toString(), Theme.secondaryContainer.toString());
     tonalButton.emphasized = true; wait(200); compare(tonalButton.color.toString(), Theme.primary.toString());
@@ -56,6 +58,13 @@ ShellRoot {
     verify(tab.width >= Theme.quickTabWidth); verify(tab.height >= Theme.quickTabHeight);
     tab.forceActiveFocus(); keyClick(Qt.Key_Return); compare(tabChoices, 1); compare(tab.selected, true);
     mouseClick(tab, tab.width / 2, tab.height / 2); compare(tabChoices, 2); compare(tab.selected, false); verify(!tab.activeFocus);
+   }
+   function test_slider_pointer_clears_focus_ring() {
+    volumeSlider.forceActiveFocus(); keyClick(Qt.Key_Right);
+    compare(volumeSlider.keyboardFocus, true); verify(findChild(volumeSlider, "sliderFocusIndicator").visible);
+    mouseClick(volumeSlider, volumeSlider.width * 0.75, volumeSlider.height / 2);
+    compare(sliderValue, (volumeSlider.width * 0.75 - volumeSlider.trackStart) / volumeSlider.trackWidth);
+    verify(!volumeSlider.activeFocus); verify(!findChild(volumeSlider, "sliderFocusIndicator").visible);
    }
   }
  }

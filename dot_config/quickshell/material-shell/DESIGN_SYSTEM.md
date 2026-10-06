@@ -20,7 +20,7 @@ Theme.qml内で「基礎値 → 意味を持つ役割 → 部品」を分ける�
 QML部品ではThemeの役割を参照する。0、1、比率、動的レイアウト算出は例外。
 パディング用に無関係なトークンを使わない（角丸を余白に流用する等）。
 
-### 色の役割（ダーク）
+### 色の役割（ダーク基準）
 
 | 役割 | 色 | 用途 |
 |---|---|---|
@@ -39,6 +39,8 @@ QML部品ではThemeの役割を参照する。0、1、比率、動的レイア�
 | errorText / errorContainer / errorContainerText | Matugenのon_error / error_container / on_error_container | 破壊操作の強調/通常ボタン |
 | inverseSurface / inverseSurfaceText | #e2e3dc / #2f322c | プレーンツールチップ |
 | scrim | 黒32% | モーダル外の背景 |
+
+ライトモードは同じMatugenソース色からscheme-tonal-spotのlightロールを生成する。surfaceは#f8f9ff、surfaceContainerは#eceef4、主文字は#191c20、補助文字は#42474eを基準とし、全コンポーネントは同じ意味ロールを参照する。ライト/ダーク両方のパレットを保存し、モード選択時に即時切り替える。
 
 QMLのonX命名との衝突を避けるため、onSurface等はsurfaceTextのように表す。
 通常文字は背景とのコントラスト4.5:1以上、意味を持つアイコン・フォーカスは3:1以上。
@@ -122,14 +124,14 @@ Terminal=trueはkittyを介して実行する。生のExec文字列をシェル�
 
 ## 壁紙からの動的配色
 
-Matugenのscheme-tonal-spot、dark、標準コントラスト0を使用する。
+Matugenのscheme-tonal-spot、light/dark、標準コントラスト0を生成して使用する。
 壁紙の最多のソース色（index 0）を自動選択し、過度な彩度を避ける。
 上記の固定色は初回・パレット未作成時のフォールバック。生成したMD3の
 on_surface / on_surface_variant / on_secondary_container / inverse_on_surfaceを
 surfaceText / surfaceVariantText / secondaryContainerText / inverseSurfaceTextへ対応させる。
 バー・パネル・検索・状態レイヤー・構造アイコン・ツールチップを一括更新する。
 アプリ公式ロゴ、scrimの黒32%、寸法・形状・書体は変えない。
-保存先はXDG_STATE_HOME/material-shell/palette.json。全必須色の検証後にアトミック保存し、
+ライト/ダーク双方をXDG_STATE_HOME/material-shell/palette.jsonへ保存する。全必須色の検証後にアトミック保存し、
 不正なJSON・画像・生成失敗では直前の配色を保持する。全画面共通のパレットとし、
 awwwの先頭出力の壁紙を5秒間隔で確認する。画像が変わった時だけ再生成する。
 壁紙描画はawwwを使用し、色生成・保存・QMLへの適用は独自実装が担う。
@@ -163,7 +165,7 @@ Noctaliaのwallpaper.enabledはfalseにし、描画の競合を防ぐ。
 コントロールパネルはスクラムなしでバー下端に接して表示する。上辺の角丸をなくし、surfaceContainerでバーと背景色を揃え、画面端から24px以上離し、外側クリックとEscで閉じる。壁紙セレクターなど大きな専用パネルも同じPanelFrameの接続・アニメーション規則を使う。Caelestia shellのoffsetScale方式を参考に、閉じたパネルを最終位置より高さ+4pxだけバーの背後へ退避し、開閉時に320msのOutCubicで下へ移動しながらフェードする。バーに接するパネルは表面だけをフェードして全画面合成を避ける。reducedMotionでは移動を即時化する。
 設定のスイッチは48×28px、つまみ20px。数値は増減ボタン、列挙値は選択ボタンで操作し、
 保存ボタンで検証・アトミック保存後に反映する。設定先はXDG_CONFIG_HOME/material-shell/settings.json。
-表示項目、ワークスペース数、通知DND、音量OSD、自動ロック/消灯時間を提供する。バー日時はカレンダーアイコンを付けず、`yyyy/MM/dd HH:mm`形式で表示する。
+表示項目、ワークスペース数、通知DND、音量OSD、自動ロック/消灯時間を提供する。ライト/ダークの選択は即時保存・反映する。バー日時はカレンダーアイコンを付けず、`yyyy/MM/dd HH:mm`形式で表示する。
 自動ロック・消灯の既定は無効（現在の環境と同じ）。
 セッションはロック・サスペンド・ログアウト・再起動・電源オフ。ロック以外は別の確認画面を表示し、
 最初の選択で実行しない。失敗はパネル内へ表示。サスペンドは全画面ロック完了後に実行する。
@@ -220,7 +222,7 @@ Now Playingは前/再生/次を背景つきの連結ツールバーにまとめ�
 プログレスは共通ExpressiveProgress。トラック4px、進行部/残りの隙間4px、終端マーカー4px。波形は振幅3px・波長40pxで確定値を表示、全高10px。OSDへ適用。表示中だけ波の位相を進める。アニメーションの詳細は下記の更新仕様に従う。0/100%・無効状態を正しく表示。直線表示もwavy=falseで利用可能。
 参照: https://github.com/material-components/material-components-android/blob/master/docs/components/Slider.md 、https://github.com/material-components/material-components-android/blob/master/docs/components/ProgressIndicator.md
 
-Now Playingの再生位置はExpressiveProgressの波形表示へ変更。表示専用でシーク操作を行わない。経過/総時間と再生・前/次の操作は維持。音量はVolumeSliderを継続使用。
+Now Playingの再生位置はExpressiveProgressの波形表示を使用。プレイヤーがシークと位置設定に対応する場合、クリック・ドラッグと左右/Home/Endキーで操作できる。非対応時は表示専用。経過/総時間と再生・前/次の操作は維持。音量はVolumeSliderを継続使用。
 
 波形のアクティブインジケーターは公式Android標準トークンに合わせ線幅4px・振幅3px・確定進捗の波長40pxへ修正。両端はround cap、位相はバー全体の座標に固定し、進行部分が伸びても波の位置はずれない。微小な進捗は線幅を縮小して丸い点を表示する。
 根拠: https://github.com/material-components/material-components-android/blob/master/lib/java/com/google/android/material/progressindicator/res/values/tokens.xml

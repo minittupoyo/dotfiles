@@ -37,11 +37,13 @@ def generate(path):
     raw = json.loads(run([binary, 'image', str(path), '--dry-run', '--source-color-index', '0',
                           '--mode', 'dark', '--type', 'scheme-tonal-spot', '--contrast', '0',
                           '--json', 'hex', '--old-json-output']))
-    colors = {role: raw['colors'][role]['dark'] for role in ROLES}
-    if not all(isinstance(v, str) and re.fullmatch(r'#[0-9a-fA-F]{6}', v) for v in colors.values()):
+    schemes = {mode: {role: raw['colors'][role][mode] for role in ROLES}
+               for mode in ('light', 'dark')}
+    if not all(isinstance(value, str) and re.fullmatch(r'#[0-9a-fA-F]{6}', value)
+               for colors in schemes.values() for value in colors.values()):
         raise ValueError('Matugen returned invalid colors')
-    return {'version': 1, 'wallpaper': signature(path), 'scheme': 'scheme-tonal-spot',
-            'mode': 'dark', 'contrast': 0, 'colors': colors}
+    return {'version': 2, 'wallpaper': signature(path), 'scheme': 'scheme-tonal-spot',
+            'contrast': 0, 'schemes': schemes}
 
 
 def update(path=None, set_wallpaper=False):
@@ -54,7 +56,9 @@ def update(path=None, set_wallpaper=False):
         if not set_wallpaper:
             try:
                 saved = json.loads((STATE / 'palette.json').read_text())
-                if saved['wallpaper'] == signature(path) and all(re.fullmatch(r'#[0-9a-fA-F]{6}', saved['colors'][r]) for r in ROLES):
+                if (saved.get('version') == 2 and saved['wallpaper'] == signature(path)
+                        and all(re.fullmatch(r'#[0-9a-fA-F]{6}', saved['schemes'][mode][r])
+                                for mode in ('light', 'dark') for r in ROLES)):
                     backend.save(path)
                     return
             except (OSError, ValueError, KeyError, TypeError):

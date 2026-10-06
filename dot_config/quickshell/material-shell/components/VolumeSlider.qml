@@ -4,6 +4,7 @@ Item {
     id: slider
     property real value: 0
     signal adjusted(real value)
+    property bool keyboardFocus: false
     implicitHeight: Theme.sliderHeight
     implicitWidth: Theme.launcherWidth / 2
     activeFocusOnTab: enabled
@@ -11,11 +12,11 @@ Item {
     Accessible.role: Accessible.Slider
     Accessible.name: "音量 " + Math.round(value * 100) + "%"
     function adjust(next) { if (enabled) adjusted(Math.max(0, Math.min(1, next))); }
-    Keys.onLeftPressed: adjust(value - 0.05)
-    Keys.onRightPressed: adjust(value + 0.05)
+    Keys.onLeftPressed: { keyboardFocus = true; adjust(value - 0.05); }
+    Keys.onRightPressed: { keyboardFocus = true; adjust(value + 0.05); }
     Keys.onPressed: event => {
-        if (event.key === Qt.Key_Home) { adjust(0); event.accepted = true; }
-        else if (event.key === Qt.Key_End) { adjust(1); event.accepted = true; }
+        if (event.key === Qt.Key_Home) { keyboardFocus = true; adjust(0); event.accepted = true; }
+        else if (event.key === Qt.Key_End) { keyboardFocus = true; adjust(1); event.accepted = true; }
     }
     readonly property real fraction: Math.max(0, Math.min(1, value))
     readonly property real trackStart: Theme.sliderHandleWidth / 2
@@ -62,7 +63,8 @@ Item {
         Behavior on width { enabled: !Theme.reducedMotion; NumberAnimation { duration: Theme.motionDuration } }
     }
     Rectangle {
-        visible: slider.activeFocus
+        objectName: "sliderFocusIndicator"
+        visible: slider.activeFocus && slider.keyboardFocus
         x: slider.handleX - width / 2
         anchors.verticalCenter: parent.verticalCenter
         width: Theme.sliderHandleWidth + Theme.space8; height: Theme.sliderHeight
@@ -74,7 +76,7 @@ Item {
         anchors.fill: parent
         cursorShape: Qt.PointingHandCursor
         function setPosition(x) { slider.adjust((x - slider.trackStart) / Math.max(1, slider.trackWidth)); }
-        onPressed: mouse => { slider.forceActiveFocus(); setPosition(mouse.x); }
+        onPressed: mouse => { slider.keyboardFocus = false; slider.focus = false; setPosition(mouse.x); }
         onPositionChanged: mouse => { if (pressed) setPosition(mouse.x); }
         onWheel: event => { slider.adjust(slider.value + (event.angleDelta.y > 0 ? 0.05 : -0.05)); event.accepted = true; }
     }

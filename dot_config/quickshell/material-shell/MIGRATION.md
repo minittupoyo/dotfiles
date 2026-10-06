@@ -18,6 +18,8 @@ QuickShellを再起動して設定ロードとログを確認。実際の無線�
 
 M3 Expressiveの共通部品も更新。Theme.qmlにDisplay〜Labelのサイズ/行高とoutline・errorContainer色ロールを追加し、通常ボタンをsecondaryContainer tonal variantへ統一。破壊操作にerror色を適用。スイッチはオフ時outline・オン時check、無効時のクリック/キー入力を抑止。タブ名を可視化しました。コンポーネント操作テストはDP-2/DP-3で各4件成功。
 
+設定タブにライト/ダーク切り替えを追加。Matugenから両モードのパレットを一度に生成して保存し、選択モードを即時に全画面へ反映します。
+
 ## 最新状態: 独立シェルへ切替（2026-10-06）
 
 設定、セッションメニュー、通知・履歴・DND、トレイと独自メニュー、クリップボード履歴、
@@ -144,7 +146,7 @@ services/にはアプリ一覧、パネル状態、通知、設定永続化、�
 - 独自実装へ移行: MatugenによるMD3色生成、検証、アトミック保存、変更検出、QMLでの動的適用。
 - 全画面のバー、独自ランチャー、入力欄、ツールチップ、構造アイコンはThemeの共通色を使用。
 - Noctaliaに残る: 壁紙描画・選択UI・画面ごとの壁紙保存。palette.pyのcurrent_wallpaperとwallpaper-setが接続点。
-- Matugen 4.2.0の公式バイナリをユーザー領域へ導入。scheme-tonal-spot / dark / contrast 0。
+- Matugen 4.2.0の公式バイナリをユーザー領域へ導入。scheme-tonal-spot / light・dark / contrast 0。
 - 今後: 独自壁紙選択UIと描画バックエンドに切り替えてNoctaliaのwallpaper-get/setを除去する。
 
 配色の検証: QMLテスト10件成功、実機ランチャー6件成功。
@@ -197,7 +199,7 @@ Now Playingをバー直下のPopupWindowへ変更（スクラムなし・内容�
 
 共通VolumeSliderを縦ハンドル・分離トラック・端点へ更新。ExpressiveProgressを追加しOSDへ適用。仕様と寸法はDESIGN_SYSTEM.md / Theme.qmlに記録。QML10件、オーディオ5件、Now Playing両画面各7件成功。実画面で描画を確認。検証のOSD IPCは表示のみで音量を変更しない。
 
-Now Playingの再生位置を表示専用のExpressiveProgressへ変更。シーク操作を撤去し、経過/総時間は維持。
+Now Playingの再生位置をExpressiveProgressで表示し、シーク対応プレイヤーではクリック・ドラッグと左右/Home/Endキーで操作可能にした。非対応プレイヤーは表示専用。経過/総時間は維持。
 
 波形インジケーターの寸法を公式標準トークン（線幅4・振幅3・波長40）に修正。微小進捗の丸い端点も描画する。
 

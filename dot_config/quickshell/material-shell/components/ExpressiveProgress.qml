@@ -3,6 +3,9 @@ import ".."
 Item {
     id: progress
     property real value: 0
+    property bool interactive: false
+    signal adjusted(real value)
+    property bool keyboardFocus: false
     property bool wavy: true
     readonly property real fraction: Math.max(0, Math.min(1, value))
     property bool animationEnabled: true
@@ -25,8 +28,17 @@ Item {
     }
     implicitHeight: Theme.progressTrackHeight + (wavy ? Theme.progressAmplitude * 2 : 0)
     opacity: enabled ? 1 : 0.38
-    Accessible.role: Accessible.ProgressBar
+    activeFocusOnTab: interactive && enabled
+    Accessible.role: interactive ? Accessible.Slider : Accessible.ProgressBar
     Accessible.name: Math.round(fraction * 100) + "%"
+    function adjust(next) { if (interactive && enabled) adjusted(Math.max(0, Math.min(1, next))); }
+    Keys.onLeftPressed: { keyboardFocus = true; adjust(value - 0.05); }
+    Keys.onRightPressed: { keyboardFocus = true; adjust(value + 0.05); }
+    Keys.onPressed: event => {
+        if (!interactive || !enabled) return;
+        if (event.key === Qt.Key_Home) { keyboardFocus = true; adjust(0); event.accepted = true; }
+        else if (event.key === Qt.Key_End) { keyboardFocus = true; adjust(1); event.accepted = true; }
+    }
     Rectangle {
         x: Math.min(progress.width, progress.activeWidth + Theme.progressGap)
         width: Math.max(0, progress.width - x)
@@ -76,5 +88,23 @@ Item {
         width: Theme.progressStopSize; height: width; radius: width / 2
         color: Theme.primary
         visible: x > progress.activeWidth + Theme.progressGap
+    }
+    MouseArea {
+        id: pointer
+        anchors.fill: parent
+        enabled: progress.interactive && progress.enabled
+        cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+        function setPosition(x) { progress.adjust(x / Math.max(1, width)); }
+        onPressed: mouse => { progress.keyboardFocus = false; progress.focus = false; setPosition(mouse.x); }
+        onPositionChanged: mouse => { if (pressed) setPosition(mouse.x); }
+    }
+    Rectangle {
+        objectName: "progressFocusIndicator"
+        visible: progress.interactive && progress.activeFocus && progress.keyboardFocus
+        anchors.fill: parent
+        radius: Theme.space4
+        color: "transparent"
+        border.width: 1
+        border.color: Theme.primary
     }
 }

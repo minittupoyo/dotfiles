@@ -4,22 +4,51 @@ import QtQuick
 QtObject {
     id: theme
     property var palette: ({})
+    property var schemes: ({})
+    property string mode: "dark"
     property bool reducedMotion: false
     property string palettePath: ""
+    readonly property var fallbackPalette: mode === "light" ? ({
+        surface: "#f8f9ff", surface_container: "#eceef4", surface_container_high: "#e6e8ee",
+        surface_container_highest: "#e1e2e8", on_surface: "#191c20", on_surface_variant: "#42474e",
+        outline: "#73777f", outline_variant: "#c3c7cf", primary: "#35618e", on_primary: "#ffffff",
+        primary_container: "#d1e4ff", on_primary_container: "#001d36", secondary_container: "#d6e3f7",
+        on_secondary_container: "#101c2b", error: "#ba1a1a", on_error: "#ffffff",
+        error_container: "#ffdad6", on_error_container: "#410002", inverse_surface: "#2e3135",
+        inverse_on_surface: "#eff0f7"
+    }) : ({
+        surface: "#121411", surface_container: "#1e211d", surface_container_high: "#282b26",
+        surface_container_highest: "#333630", on_surface: "#e2e3dc", on_surface_variant: "#c3c8bd",
+        outline: "#8e9387", outline_variant: "#43483f", primary: "#b4cea5", on_primary: "#263422",
+        primary_container: "#3c4b37", on_primary_container: "#d8e7cc", secondary_container: "#3c4b37",
+        on_secondary_container: "#d8e7cc", error: "#ffb4ab", on_error: "#690005",
+        error_container: "#93000a", on_error_container: "#ffdad6", inverse_surface: "#e2e3dc",
+        inverse_on_surface: "#2f322c"
+    })
+    function setMode(value) {
+        if (value !== "light" && value !== "dark") return;
+        mode = value;
+        palette = schemes[mode] || {};
+    }
+    function validColors(colors) {
+        const required = ["surface", "surface_container", "surface_container_high", "surface_container_highest",
+            "on_surface", "on_surface_variant", "outline_variant", "primary", "secondary_container",
+            "on_secondary_container", "error", "inverse_surface", "inverse_on_surface"];
+        if (!colors || !required.every(key => typeof colors[key] === "string" && /^#[0-9a-fA-F]{6}$/.test(colors[key]))) return false;
+        const optional = ["outline", "on_primary", "primary_container", "on_primary_container", "on_error", "error_container", "on_error_container"];
+        return optional.every(key => colors[key] === undefined || (typeof colors[key] === "string" && /^#[0-9a-fA-F]{6}$/.test(colors[key])));
+    }
     function acceptPalette(text) {
         try {
             const data = JSON.parse(text);
-            const required = ["surface", "surface_container", "surface_container_high", "surface_container_highest",
-                "on_surface", "on_surface_variant", "outline_variant", "primary", "secondary_container",
-                "on_secondary_container", "error", "inverse_surface", "inverse_on_surface"];
-            if (data.version !== 1 || !data.colors || !required.every(key =>
-                    typeof data.colors[key] === "string" && /^#[0-9a-fA-F]{6}$/.test(data.colors[key])))
-                throw new Error("Incomplete palette");
-            const next = Object.assign({}, data.colors);
-            ["outline", "on_primary", "primary_container", "on_primary_container", "on_error", "error_container", "on_error_container"].forEach(key => {
-                if (next[key] !== undefined && (typeof next[key] !== "string" || !/^#[0-9a-fA-F]{6}$/.test(next[key]))) throw new Error("Invalid expressive color");
-            });
-            palette = next;
+            let nextSchemes;
+            if (data.version === 2 && data.schemes && validColors(data.schemes.light) && validColors(data.schemes.dark)) {
+                nextSchemes = data.schemes;
+            } else if (data.version === 1 && validColors(data.colors)) {
+                nextSchemes = data.mode === "light" ? {light: data.colors} : {dark: data.colors};
+            } else throw new Error("Incomplete palette");
+            schemes = nextSchemes;
+            palette = schemes[mode] || {};
         } catch (error) { console.warn("Keeping previous palette:", error); }
     }
     readonly property string fontFamily: "Inter"
@@ -62,28 +91,28 @@ QtObject {
     readonly property int shapeMedium: 12
     readonly property int shapeExtraLarge: 32
 
-    // Semantic roles: wallpaper-derived MD3 dark, sage fallback.
-    readonly property color surface: palette.surface || "#121411"
-    readonly property color surfaceContainer: palette.surface_container || "#1e211d"
-    readonly property color surfaceContainerHigh: palette.surface_container_high || "#282b26"
-    readonly property color surfaceContainerHighest: palette.surface_container_highest || "#333630"
+    // Semantic roles: wallpaper-derived MD3 light/dark, mode-specific fallback.
+    readonly property color surface: palette.surface || fallbackPalette.surface
+    readonly property color surfaceContainer: palette.surface_container || fallbackPalette.surface_container
+    readonly property color surfaceContainerHigh: palette.surface_container_high || fallbackPalette.surface_container_high
+    readonly property color surfaceContainerHighest: palette.surface_container_highest || fallbackPalette.surface_container_highest
     readonly property color scrim: "#52000000"
-    readonly property color surfaceText: palette.on_surface || "#e2e3dc"
-    readonly property color surfaceVariantText: palette.on_surface_variant || "#c3c8bd"
-    readonly property color outline: palette.outline || "#8e9387"
-    readonly property color outlineVariant: palette.outline_variant || "#43483f"
-    readonly property color primary: palette.primary || "#b4cea5"
-    readonly property color primaryText: palette.on_primary || surface
-    readonly property color primaryContainer: palette.primary_container || secondaryContainer
-    readonly property color primaryContainerText: palette.on_primary_container || secondaryContainerText
-    readonly property color secondaryContainer: palette.secondary_container || "#3c4b37"
-    readonly property color secondaryContainerText: palette.on_secondary_container || "#d8e7cc"
-    readonly property color error: palette.error || "#ffb4ab"
-    readonly property color errorText: palette.on_error || "#690005"
-    readonly property color errorContainer: palette.error_container || "#93000a"
-    readonly property color errorContainerText: palette.on_error_container || "#ffdad6"
-    readonly property color inverseSurface: palette.inverse_surface || "#e2e3dc"
-    readonly property color inverseSurfaceText: palette.inverse_on_surface || "#2f322c"
+    readonly property color surfaceText: palette.on_surface || fallbackPalette.on_surface
+    readonly property color surfaceVariantText: palette.on_surface_variant || fallbackPalette.on_surface_variant
+    readonly property color outline: palette.outline || fallbackPalette.outline
+    readonly property color outlineVariant: palette.outline_variant || fallbackPalette.outline_variant
+    readonly property color primary: palette.primary || fallbackPalette.primary
+    readonly property color primaryText: palette.on_primary || fallbackPalette.on_primary
+    readonly property color primaryContainer: palette.primary_container || fallbackPalette.primary_container
+    readonly property color primaryContainerText: palette.on_primary_container || fallbackPalette.on_primary_container
+    readonly property color secondaryContainer: palette.secondary_container || fallbackPalette.secondary_container
+    readonly property color secondaryContainerText: palette.on_secondary_container || fallbackPalette.on_secondary_container
+    readonly property color error: palette.error || fallbackPalette.error
+    readonly property color errorText: palette.on_error || fallbackPalette.on_error
+    readonly property color errorContainer: palette.error_container || fallbackPalette.error_container
+    readonly property color errorContainerText: palette.on_error_container || fallbackPalette.on_error_container
+    readonly property color inverseSurface: palette.inverse_surface || fallbackPalette.inverse_surface
+    readonly property color inverseSurfaceText: palette.inverse_on_surface || fallbackPalette.inverse_on_surface
 
     // Component tokens.
     readonly property color panelBackground: surfaceContainerHigh

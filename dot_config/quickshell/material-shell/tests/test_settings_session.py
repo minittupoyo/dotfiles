@@ -34,7 +34,7 @@ class SettingsTests(unittest.TestCase):
             settings.save(data)
             self.assertEqual(settings.read(),data)
             original=settings.CONFIG.read_bytes()
-            for invalid in [dict(data,workspaces=0),dict(data,showCpu=1),dict(data,autoLockMinutes=20,screenOffMinutes=10),dict(data,unknown=True)]:
+            for invalid in [dict(data,workspaces=0),dict(data,showCpu=1),dict(data,autoLockMinutes=20,screenOffMinutes=10),dict(data,themeMode='sepia'),dict(data,unknown=True)]:
                 with self.assertRaises(ValueError):settings.save(invalid)
                 self.assertEqual(settings.CONFIG.read_bytes(),original)
 

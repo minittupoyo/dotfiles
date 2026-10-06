@@ -128,6 +128,12 @@ PopupWindow {
                     objectName: "mediaProgress"; visible: !!panel.player && !!panel.player.lengthSupported && !!panel.player.positionSupported
                     Layout.fillWidth: true
                     value: panel.player?.length > 0 ? panel.position / panel.player.length : 0
+                    interactive: !!panel.player && !!panel.player.canSeek && !!panel.player.positionSupported && !!panel.player.lengthSupported && panel.player.length > 0
+                    onAdjusted: fraction => {
+                        if (!panel.player || !panel.player.canSeek || !panel.player.positionSupported || !panel.player.lengthSupported) return;
+                        panel.player.position = Math.max(0, Math.min(panel.player.length, fraction * panel.player.length));
+                        panel.refresh();
+                    }
                     Accessible.name: "再生位置"
                 }
                 RowLayout {

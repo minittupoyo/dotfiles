@@ -302,6 +302,26 @@ PanelFrame {
                     Layout.fillWidth: true
                     visible: panel.tab === "settings"
                     spacing: Theme.space8
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Text { Layout.fillWidth: true; text: "カラーテーマ"; color: Theme.surfaceText; font.family: Theme.fontFamily; font.pixelSize: Theme.bodySize }
+                        ShellButton {
+                            objectName: "themeModeLight"
+                            text: "ライト"
+                            icon: "brightness_high"
+                            emphasized: panel.draft.themeMode === "light"
+                            enabled: !Settings.saving
+                            onClicked: { const next = Object.assign({}, panel.draft); next.themeMode = "light"; panel.draft = next; Settings.save(Object.assign({}, Settings.values, {themeMode: "light"})); }
+                        }
+                        ShellButton {
+                            objectName: "themeModeDark"
+                            text: "ダーク"
+                            icon: "bedtime"
+                            emphasized: panel.draft.themeMode !== "light"
+                            enabled: !Settings.saving
+                            onClicked: { const next = Object.assign({}, panel.draft); next.themeMode = "dark"; panel.draft = next; Settings.save(Object.assign({}, Settings.values, {themeMode: "dark"})); }
+                        }
+                    }
                     Repeater {
                         model: [{key:"showCpu",label:"CPU使用率"},{key:"showMemory",label:"メモリ使用率"},{key:"showNetwork",label:"ネットワーク"},{key:"showWindowTitle",label:"ウィンドウ名"},{key:"showTray",label:"システムトレイ"},{key:"osd",label:"音量・明るさのOSD"},{key:"dnd",label:"通知を一時停止"}]
                         delegate: RowLayout {
