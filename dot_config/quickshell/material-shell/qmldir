@@ -1,0 +1,28 @@
+singleton Theme 1.0 Theme.qml
+Chip 1.0 Chip.qml
+BarTooltip 1.0 BarTooltip.qml
+
+MaterialIcon 1.0 components/MaterialIcon.qml
+PanelFrame 1.0 components/PanelFrame.qml
+SearchField 1.0 components/SearchField.qml
+Launcher 1.0 Launcher.qml
+ShellButton 1.0 components/ShellButton.qml
+WallpaperSelector 1.0 WallpaperSelector.qml
+singleton Settings 1.0 Settings.qml
+PanelHeader 1.0 components/PanelHeader.qml
+Toggle 1.0 components/Toggle.qml
+SettingsPanel 1.0 SettingsPanel.qml
+SessionMenu 1.0 SessionMenu.qml
+ClipboardPanel 1.0 ClipboardPanel.qml
+NotificationService 1.0 NotificationService.qml
+NotificationCard 1.0 components/NotificationCard.qml
+NotificationCenter 1.0 NotificationCenter.qml
+TrayMenu 1.0 TrayMenu.qml
+Osd 1.0 Osd.qml
+CapturePanel 1.0 CapturePanel.qml
+VolumeSlider 1.0 components/VolumeSlider.qml
+AudioPanel 1.0 AudioPanel.qml
+MediaService 1.0 MediaService.qml
+NowPlaying 1.0 NowPlaying.qml
+ExpressiveProgress 1.0 components/ExpressiveProgress.qml
+SessionAction 1.0 components/SessionAction.qml

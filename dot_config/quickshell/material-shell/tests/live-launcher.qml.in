@@ -1,0 +1,57 @@
+import Quickshell
+import QtQuick
+import QtTest
+import "@@IMPORT@@"
+
+ShellRoot {
+    Launcher {
+        id: launcher
+        property bool opened: true
+        visible: opened
+        screen: Quickshell.screens[0]
+        onDismissed: opened = false
+        TestCase {
+            id: tests
+            name: "LiveLauncher"
+            when: true
+            function cleanupTestCase() { console.warn("LiveLauncher test results: passed=" + qtest_results.passCount + " failed=" + qtest_results.failCount); }
+            function init() {
+                launcher.opened = true;
+                tryVerify(() => launcher.visible);
+                wait(30);
+                findChild(launcher.contentItem, "searchInput").forceActiveFocus();
+            }
+            function test_escape_closes_panel() {
+                keyClick(Qt.Key_Escape);
+                tryCompare(launcher, "visible", false);
+            }
+            function test_outside_click_closes_panel() {
+                mouseClick(launcher.contentItem, 10, 10);
+                tryCompare(launcher, "visible", false);
+            }
+            function test_search_navigation_and_empty_enter() {
+                launcher.setQuery("");
+                keyClick(Qt.Key_Down);
+                compare(launcher.selectedIndex, 1);
+                keyClick(Qt.Key_Up);
+                compare(launcher.selectedIndex, 0);
+                launcher.setQuery("存在しないアプリxyz");
+                compare(launcher.results.length, 0);
+                keyClick(Qt.Key_Return);
+                compare(launcher.visible, true);
+            }
+            function test_launch_regular_desktop_entry() {
+                launcher.setQuery("@@REGULAR@@");
+                tryVerify(() => launcher.results.length === 1);
+                keyClick(Qt.Key_Return);
+                tryCompare(launcher, "visible", false);
+            }
+            function test_launch_terminal_desktop_entry() {
+                launcher.setQuery("@@TERMINAL@@");
+                tryVerify(() => launcher.results.length === 1);
+                keyClick(Qt.Key_Return);
+                tryCompare(launcher, "visible", false);
+            }
+        }
+    }
+}
