@@ -8,8 +8,9 @@ PanelFrame {
     property string pendingAction: ""
     property string error: ""
     property bool executing: false
+    readonly property string cliDir: Quickshell.env("MATERIAL_SHELL_CLI_DIR") || ((Quickshell.env("HOME") || "") + "/.local/bin")
+    property string executorPath: cliDir + "/material-session"
     panelHeight: panel.pendingAction === "" ? Theme.sessionPanelHeight : Theme.sessionConfirmHeight
-    property string helperPath: Quickshell.shellDir + "/session.py"
     readonly property var actions: [{id:"lock",label:"画面をロック",icon:"lock"},
         {id:"suspend",label:"サスペンド",icon:"bedtime"},{id:"logout",label:"ログアウト",icon:"logout"},
         {id:"reboot",label:"再起動",icon:"restart_alt"},{id:"poweroff",label:"電源オフ",icon:"power_settings_new"}]
@@ -23,7 +24,7 @@ PanelFrame {
     function execute() {
         if (!pendingAction || executing) return;
         executing = true; error = "";
-        executor.command = ["python3", helperPath, pendingAction];
+        executor.command = [executorPath, pendingAction];
         executor.running = true;
     }
     Process {

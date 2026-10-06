@@ -8,7 +8,7 @@ import sys
 
 def main():
     env=dict(os.environ);env.pop('MATERIAL_LOCK_PREVIEW',None)
-    env['FONTCONFIG_FILE']=str(Path(__file__).resolve().parent/'fonts.conf')
+    env['FONTCONFIG_FILE']=str(Path.home()/'.config/quickshell/material-shell/fonts.conf')
     subprocess.run(['quickshell','-c','material-lock','--no-duplicate','--daemonize'],env=env,check=True)
     for _ in range(100):
         try:

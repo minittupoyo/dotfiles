@@ -17,6 +17,9 @@ PanelFrame {
     property string processError: ""
     property string applyingPath: ""
     property bool applying: false
+    readonly property string cliDir: Quickshell.env("MATERIAL_SHELL_CLI_DIR") || ((Quickshell.env("HOME") || "") + "/.local/bin")
+    property string scannerPath: cliDir + "/material-wallpapers"
+    property string palettePath: cliDir + "/material-palette"
     readonly property bool busy: applying || applyProcess.running
     readonly property var results: {
         const terms = search.text.normalize("NFKC").toLocaleLowerCase().trim().split(/\s+/).filter(Boolean);
@@ -33,7 +36,7 @@ PanelFrame {
     function refresh(directory) {
         if (scanProcess.running || busy) return;
         failed = false; message = "読み込み中…"; processError = "";
-        scanProcess.command = ["python3", Quickshell.shellDir + "/wallpapers.py"];
+        scanProcess.command = [scannerPath];
         if (directory) scanProcess.command = [...scanProcess.command, "--directory", directory];
         scanProcess.running = true;
     }
@@ -47,7 +50,7 @@ PanelFrame {
         applying = true;
         applyingPath = selected.path;
         failed = false; message = "壁紙と配色を適用中…"; processError = "";
-        applyProcess.command = ["python3", Quickshell.shellDir + "/palette.py", applyingPath];
+        applyProcess.command = [palettePath, applyingPath];
         applyProcess.running = true;
     }
     function status() {

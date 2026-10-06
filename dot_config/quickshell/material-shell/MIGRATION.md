@@ -197,3 +197,12 @@ OSDの上下余白を修正。高さを内容の自然高と上下各16pxのパ�
 ## セッションメニューの横並び化
 
 操作一覧をレスポンシブな横方向グリッドにし、32pxアイコンと下側ラベルの独自セルへ変更。確認画面は従来どおり。
+
+## バックエンドCLIへの責務分離
+
+2026-10-06: OS操作・永続化・統計・監視を`~/.local/lib/material-shell`の実装と
+`~/.local/bin/material-*`のCLIへ移行。QuickShellからPythonモジュールを直接起動する経路を撤去。
+統計、壁紙パレット監視、クリップボード/アイドル監視はユーザーsystemdサービスが所有し、
+UIはファイル監視またはCLIのJSON結果を読む。通知、トレイ、MPRIS、PipeWire、Hyprlandの
+ネイティブな状態購読と描画はQuickShellに残す。
+音量/ミュート・明るさのキーバインドは`material-audio` / `material-display` CLIへ委譲。

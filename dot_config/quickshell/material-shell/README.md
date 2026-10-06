@@ -24,7 +24,7 @@ Noctaliaの自動起動は撤去済み。通知・トレイ・クリップボー
 `~/.local/state/noctalia/settings.toml.before-awww`を復元し、awww-daemonを停止してください。
 
 必要環境: Quickshell 0.3.1、Hyprland、Python 3、NetworkManager（nmcli）、PipeWire、
-awww、Matugen、grim、slurp、wl-clipboard、cliphist、swayidle。
+awww、Matugen、grim、slurp、wl-clipboard、cliphist、swayidle、oxipng。
 外部コマンドはユーザー領域 `~/.local/bin`へ導入済みです。
 
 色・高さ・文字サイズはTheme.qmlで管理します。
@@ -72,12 +72,12 @@ live_launcher.pyは検証用の一時desktop entryを作り、実際のパネル
 Matugen 4.2.0を~/.local/bin/matugenに配置（公式リリースのSHA-256を照合）。
 起動時および壁紙変更時にdark / scheme-tonal-spot / contrast 0を生成します。
 awwwの先頭出力の壁紙を5秒ごとに確認し、変更時のみ生成。2画面とも共通配色です。
-壁紙の描画はawww、保存と復元はwallpaper_backend.pyが担当します。
+壁紙の描画はawww、保存と復元は`material-wallpaper-backend`が担当します。
 
 壁紙と配色を同時に変更（空白を含むパスは引用符で囲む）:
 
 ```sh
-python3 ~/.config/quickshell/material-shell/palette.py "/path/to/wallpaper.jpg"
+material-palette "/path/to/wallpaper.jpg"
 ```
 
 現在の壁紙から生成する場合は引数なし。awww imgで変更した場合も自動追従します。
@@ -148,7 +148,7 @@ python3 ~/.config/quickshell/material-shell/tests/test_wallpaper_backend.py
 通知は置換・期限・アクション・履歴・DNDに対応。本文はプレーンテキストです。
 クリップボードはテキスト・画像を最大100件保存し、検索・再コピー・個別削除できます。
 従来のNoctalia履歴はそのまま保存し、新しい履歴は独立したデータベースを使います。
-Printキーとキャプチャパネルから現在のディスプレイ・全ディスプレイ・範囲を撮影できます。範囲は独立プログラム `~/.local/bin/material-screenshot` がslurpを直接起動し、ドラッグして離すと撮影、Escでキャンセルします。画像は `~/Pictures/Screenshots`へPNG保存してクリップボードにもコピーします。
+Printキーとキャプチャパネルから現在のディスプレイ・全ディスプレイ・範囲を撮影できます。範囲は独立プログラム `~/.local/bin/material-screenshot` がslurpを直接起動し、ドラッグして離すと撮影、Escでキャンセルします。撮影後はoxipngでロスレス最適化し、ファイルサイズが小さくなった場合だけ採用します。最適化後のPNGを `~/Pictures/Screenshots`へ保存してクリップボードにもコピーします。
 音量・ミュート・明るさの変更でOSDを表示します（明るさはバックライト搭載時）。
 曲が変わるとアルバムアート、曲名、アーティストを含むメディアOSDを4秒間表示します。
 
@@ -233,3 +233,15 @@ OSDの高さはアイコンとラベル/波形プログレスの自然高から�
 音量・明るさOSDとバーのアイコンは現在値に合わせて切り替わります。音量はミュート/小/大、明るさは低/中/高、バッテリーは残量と充電状態を表示します。
 
 セッションメニューは横並びグリッドで、32pxアイコンの下に操作名を表示します。画面幅に応じて列数を調整します。
+
+## バックエンドCLI
+
+OS操作・永続化・統計・監視処理は`~/.local/lib/material-shell`に置き、
+`~/.local/bin/material-*`のCLIから実行します。設定、セッション、クリップボード、
+キャプチャ、壁紙一覧/適用、Matugen、ロック、統計、アイドル監視を提供します。
+音量/ミュートと明るさのホットキーも`material-audio` / `material-display`経由で実行します。
+Quickshellは表示、パネル状態、QuickshellネイティブAPIによる通知・トレイ・MPRIS・
+PipeWire・Hyprland状態の購読を担当します。
+
+`start.sh`はユーザーsystemdサービスとして統計、壁紙パレット監視、クリップボード/アイドル監視を起動します。
+状態はJSON CLI出力または`$XDG_RUNTIME_DIR/material-shell/stats.json`を介してUIへ渡します。

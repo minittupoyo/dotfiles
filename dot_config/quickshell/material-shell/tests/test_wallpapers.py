@@ -5,8 +5,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-spec = importlib.util.spec_from_file_location('wallpapers', Path(__file__).resolve().parents[1] / 'wallpapers.py')
+sys.path.insert(0, str(Path.home()/'.local/lib/material-shell'))
+spec = importlib.util.spec_from_file_location('wallpapers', Path.home()/'.local/lib/material-shell/wallpapers.py')
 library = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(library)
 

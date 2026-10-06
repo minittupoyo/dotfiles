@@ -2,4 +2,4 @@
 from pathlib import Path
 import runpy, sys
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib/material-shell"))
-runpy.run_module("capture", run_name="__main__")
+runpy.run_module("audio", run_name="__main__")

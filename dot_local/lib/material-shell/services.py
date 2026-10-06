@@ -6,16 +6,17 @@ import os
 from pathlib import Path
 import shlex
 import signal
+import shutil
 import subprocess
 import time
 import settings
-from clipboard import binary
 
-ROOT=Path(__file__).resolve().parent
 RUNTIME=Path(os.environ['XDG_RUNTIME_DIR'])
 
+def binary(name): return shutil.which(name) or str(Path.home()/'.local/bin'/name)
+
 def idle_command(values):
-    lock=shlex.quote(str(ROOT/'lock.sh'))
+    lock=shlex.quote(binary('material-lock'))
     args=[binary('swayidle'),'-w','before-sleep',lock,'lock',lock]
     if values['autoLockMinutes']: args+=['timeout',str(values['autoLockMinutes']*60),lock]
     if values['screenOffMinutes']: args+=['timeout',str(values['screenOffMinutes']*60),'hyprctl dispatch \'hl.dsp.dpms({action = "disable"})\'','resume','hyprctl dispatch \'hl.dsp.dpms({action = "enable"})\'']
@@ -24,8 +25,8 @@ def idle_command(values):
 def launch(args):
     parent_pid=os.getpid()
     def child_setup():
-        # Quickshell kills Process objects on reload. Linux propagates that exit
-        # to our watchers instead of leaving detached clipboard/idle daemons.
+        # Keep the supervised watchers inside this service's process group.
+        # Linux propagates termination to each watcher instead of orphaning it.
         libc=ctypes.CDLL(None)
         if libc.prctl(1,signal.SIGTERM,0,0,0)!=0:os._exit(1)
         if os.getppid()!=parent_pid:os._exit(1)
@@ -54,7 +55,7 @@ def main():
             for kind in ['text','image']:
                 child=children.get(kind)
                 if child is None or child.poll() is not None:
-                    children[kind]=launch([binary('wl-paste'),'--type',kind,'--watch','python3',str(ROOT/'clipboard.py'),'store'])
+                    children[kind]=launch([binary('wl-paste'),'--type',kind,'--watch',binary('material-clipboard'),'store'])
             idle_values={key:values[key] for key in ['autoLockMinutes','screenOffMinutes']}
             if previous is None or idle_values!=previous or children['idle'].poll() is not None:
                 stop(children.get('idle'))

@@ -6,10 +6,10 @@ import subprocess
 import sys
 import time
 
-ROOT=Path(__file__).resolve().parent
+LOCKER=Path.home()/'.local/bin/material-lock'
 
 def lock():
-    subprocess.run([str(ROOT/'lock.sh')],check=True)
+    subprocess.run([str(LOCKER)],check=True)
 
 
 def execute(action):

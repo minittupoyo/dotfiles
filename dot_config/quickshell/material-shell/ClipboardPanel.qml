@@ -10,11 +10,12 @@ PanelFrame {
     property int selectedIndex: 0
     property string error: ""
     property string operation: "list"
+    readonly property string cliDir: Quickshell.env("MATERIAL_SHELL_CLI_DIR") || ((Quickshell.env("HOME") || "") + "/.local/bin")
     readonly property var results: entries.filter(entry => entry.preview.normalize("NFKC").toLocaleLowerCase().includes(search.text.normalize("NFKC").toLocaleLowerCase()))
     onResultsChanged: selectedIndex = 0
     onVisibleChanged: if (visible) { search.text = ""; refresh(); Qt.callLater(search.focusInput); }
-    function refresh() { if (worker.running) return; operation = "list"; error = ""; worker.command = ["python3", Quickshell.shellDir + "/clipboard.py", "list"]; worker.running = true; }
-    function operate(action, id) { if (worker.running || !id) return; operation = action; error = ""; worker.command = ["python3", Quickshell.shellDir + "/clipboard.py", action, id]; worker.running = true; }
+    function refresh() { if (worker.running) return; operation = "list"; error = ""; worker.command = [cliDir + "/material-clipboard", "list"]; worker.running = true; }
+    function operate(action, id) { if (worker.running || !id) return; operation = action; error = ""; worker.command = [cliDir + "/material-clipboard", action, id]; worker.running = true; }
     Process {
         id: worker
         stdout: SplitParser { onRead: data => { if (panel.operation === "list") { try { panel.entries = JSON.parse(data); } catch (error) { panel.error = "履歴を読み込めません"; } } } }
@@ -43,10 +44,44 @@ PanelFrame {
                 required property var modelData
                 required property int index
                 width: list.width
-                height: Theme.listRowHeight
+                readonly property bool hasImage: !!row.modelData.image
+                height: hasImage ? 104 : Theme.listRowHeight
                 radius: Theme.shapeSmall
                 color: panel.selectedIndex === index ? Theme.secondaryContainer : "transparent"
-                Text { anchors.fill: parent; anchors.margins: Theme.space12; text: row.modelData.preview; textFormat: Text.PlainText; elide: Text.ElideRight; verticalAlignment: Text.AlignVCenter; color: Theme.surfaceText; font.family: Theme.fontFamily; font.pixelSize: Theme.bodySize }
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.margins: Theme.space8
+                    spacing: Theme.space12
+                    Rectangle {
+                        Layout.preferredWidth: row.hasImage ? 88 : 0
+                        Layout.preferredHeight: row.hasImage ? 88 : 0
+                        visible: row.hasImage
+                        radius: Theme.shapeSmall
+                        color: Theme.surfaceContainerHigh
+                        clip: true
+                        Image {
+                            anchors.fill: parent
+                            source: row.modelData.image || ""
+                            sourceSize.width: 176
+                            sourceSize.height: 176
+                            fillMode: Image.PreserveAspectFit
+                            asynchronous: true
+                            cache: true
+                        }
+                    }
+                    Text {
+                        Layout.fillWidth: true
+                        text: row.modelData.preview
+                        textFormat: Text.PlainText
+                        elide: Text.ElideRight
+                        maximumLineCount: row.hasImage ? 3 : 1
+                        wrapMode: row.hasImage ? Text.Wrap : Text.NoWrap
+                        verticalAlignment: Text.AlignVCenter
+                        color: Theme.surfaceText
+                        font.family: Theme.fontFamily
+                        font.pixelSize: Theme.bodySize
+                    }
+                }
                 MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: { panel.selectedIndex = row.index; panel.operate("copy", row.modelData.id); } }
             }
             Text { anchors.centerIn: parent; visible: panel.results.length === 0; text: "履歴がありません"; color: Theme.surfaceVariantText; font.family: Theme.fontFamily; font.pixelSize: Theme.bodySize }

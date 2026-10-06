@@ -19,6 +19,37 @@ LOCK_FILE = RUNTIME / 'material-screenshot.lock'
 
 def binary(name): return shutil.which(name) or str(Path.home()/'.local/bin'/name)
 
+def optimize_png(path):
+    """Losslessly re-encode a PNG, keeping the original if it is smaller."""
+    path=Path(path)
+    optimizer=next((shutil.which(name) for name in ('oxipng','optipng') if shutil.which(name)),None)
+    descriptor,name=tempfile.mkstemp(dir=path.parent,suffix='.png')
+    os.close(descriptor)
+    optimized=Path(name)
+    try:
+        optimized.unlink()
+        if optimizer and Path(optimizer).name=='oxipng':
+            command=[optimizer,'-o','0','--strip','safe','--out',str(optimized),str(path)]
+        elif optimizer:
+            command=[optimizer,'-quiet','-o2','-out',str(optimized),str(path)]
+        else:
+            ffmpeg=shutil.which('ffmpeg')
+            if not ffmpeg: return False
+            # RGBA keeps screenshot pixel values exact while allowing FFmpeg's
+            # PNG encoder to choose more effective filters and compression.
+            command=[ffmpeg,'-v','error','-y','-i',str(path),'-frames:v','1',
+                     '-compression_level','9','-pred','mixed','-pix_fmt','rgba',str(optimized)]
+        try:
+            subprocess.run(command,check=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+        except (OSError,subprocess.SubprocessError):
+            return False
+        if optimized.is_file() and optimized.stat().st_size < path.stat().st_size:
+            os.replace(optimized,path)
+            return True
+        return False
+    finally:
+        optimized.unlink(missing_ok=True)
+
 def terminate(signum, frame):
     global selection_process
     if selection_process and selection_process.poll() is None:
@@ -43,7 +74,7 @@ def cancel_active():
     except (OSError, ValueError): return False
     try:
         args=Path(f'/proc/{pid}/cmdline').read_bytes()
-        if b'capture.py' not in args: return False
+        if b'material-screenshot' not in args: return False
         os.kill(pid,signal.SIGTERM)
         return True
     except (OSError, ProcessLookupError):
@@ -76,6 +107,7 @@ def capture(region=False, output=None, geometry=None):
     os.close(descriptor)
     try:
         subprocess.run(args+[name],check=True)
+        optimize_png(name)
         os.replace(name,target)
     finally:
         Path(name).unlink(missing_ok=True)

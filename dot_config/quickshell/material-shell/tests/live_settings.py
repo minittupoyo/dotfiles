@@ -11,7 +11,7 @@ import QtQuick
 import QtTest
 import "@@IMPORT@@"
 ShellRoot {
- Connections {target:Settings;function onSaveRequested(data){worker.command=["python3","@@HELPER@@","set",JSON.stringify(data)];worker.running=true;}}
+ Connections {target:Settings;function onSaveRequested(data){worker.command=["@@HELPER@@","set",JSON.stringify(data)];worker.running=true;}}
  Process {id:worker;stdout:SplitParser{onRead:data=>Settings.values=JSON.parse(data)} onExited:(code,status)=>Settings.saving=false}
  SettingsPanel {
   id:panel
@@ -31,7 +31,7 @@ ShellRoot {
  }
 }'''
 with tempfile.TemporaryDirectory(prefix='material-settings-tests-') as directory:
- tmp=Path(directory);(tmp/'shell.qml').write_text(fixture.replace('@@IMPORT@@',root.as_uri()).replace('@@HELPER@@',str(root/'settings.py')))
+ tmp=Path(directory);(tmp/'material-shell').symlink_to(root, target_is_directory=True);(tmp/'shell.qml').write_text(fixture.replace('@@IMPORT@@','./material-shell').replace('@@HELPER@@',str(Path.home()/'.local/bin/material-settings')))
  result=subprocess.run(['quickshell','-p',str(tmp),'--no-color'],env=dict(os.environ,XDG_CONFIG_HOME=str(tmp),FONTCONFIG_FILE=str(root/'fonts.conf')),capture_output=True,text=True,timeout=20)
  print(result.stdout+result.stderr)
  assert 'passed=5 failed=0' in result.stdout+result.stderr

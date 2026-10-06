@@ -8,6 +8,33 @@ import subprocess
 
 STATE=Path(os.environ.get('XDG_STATE_HOME',str(Path.home()/'.local/state')))/'material-shell'
 DB=STATE/'clipboard.db'
+PREVIEWS=STATE/'clipboard-previews'
+
+IMAGE_TYPES={
+    b'\x89PNG\r\n\x1a\n':('.png','image/png'),
+    b'\xff\xd8':('.jpg','image/jpeg'),
+    b'GIF87a':('.gif','image/gif'),
+    b'GIF89a':('.gif','image/gif'),
+    b'BM':('.bmp','image/bmp'),
+}
+
+def image_extension(data):
+    for signature,(extension,_mime) in IMAGE_TYPES.items():
+        if data.startswith(signature): return extension
+    if len(data)>=12 and data[:4]==b'RIFF' and data[8:12]==b'WEBP': return '.webp'
+    return None
+
+def preview_image(identifier):
+    try: data=subprocess.check_output(command('decode'),input=identifier.encode(),timeout=5)
+    except (OSError,subprocess.SubprocessError): return None
+    extension=image_extension(data)
+    if not extension: return None
+    PREVIEWS.mkdir(parents=True,exist_ok=True);os.chmod(PREVIEWS,0o700)
+    path=PREVIEWS/f'{identifier}{extension}'
+    if not path.exists() or path.stat().st_size!=len(data):
+        temporary=path.with_suffix(path.suffix+'.tmp')
+        temporary.write_bytes(data);os.chmod(temporary,0o600);temporary.replace(path)
+    return path.as_uri()
 
 def binary(name): return shutil.which(name) or str(Path.home()/'.local/bin'/name)
 
@@ -19,7 +46,9 @@ def entries():
     result=[]
     for line in output.splitlines():
         identifier,sep,preview=line.partition('\t')
-        if sep and identifier.isdigit(): result.append({'id':identifier,'preview':preview})
+        if sep and identifier.isdigit():
+            image=preview_image(identifier)
+            result.append({'id':identifier,'preview':preview,'image':image})
     return result
 
 def operate(action,identifier=None):

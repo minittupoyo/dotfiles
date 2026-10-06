@@ -4,9 +4,28 @@ import subprocess
 import tempfile
 import unittest
 from unittest.mock import Mock, patch
-spec=importlib.util.spec_from_file_location('capture',Path(__file__).resolve().parents[1]/'capture.py')
+spec=importlib.util.spec_from_file_location('capture',Path.home()/'.local/lib/material-shell/capture.py')
 capture=importlib.util.module_from_spec(spec);spec.loader.exec_module(capture)
 class CaptureTests(unittest.TestCase):
+    def test_png_optimizer_uses_smaller_lossless_output(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path=Path(tmp)/'capture.png';path.write_bytes(b'original png bytes')
+            def encode(command,**kwargs): Path(command[-1]).write_bytes(b'smaller')
+            with patch.object(capture.shutil,'which',side_effect=lambda name:'/usr/bin/ffmpeg' if name=='ffmpeg' else None),patch.object(capture.subprocess,'run',side_effect=encode):
+                self.assertTrue(capture.optimize_png(path))
+            self.assertEqual(path.read_bytes(),b'smaller')
+
+    def test_png_optimizer_keeps_original_when_output_is_larger_or_fails(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path=Path(tmp)/'capture.png';path.write_bytes(b'original')
+            def encode(command,**kwargs): Path(command[-1]).write_bytes(b'much larger output')
+            with patch.object(capture.shutil,'which',side_effect=lambda name:'/usr/bin/ffmpeg' if name=='ffmpeg' else None),patch.object(capture.subprocess,'run',side_effect=encode):
+                self.assertFalse(capture.optimize_png(path))
+            self.assertEqual(path.read_bytes(),b'original')
+            with patch.object(capture.shutil,'which',return_value=None):
+                self.assertFalse(capture.optimize_png(path))
+            self.assertEqual(path.read_bytes(),b'original')
+
     def test_real_grim_capture_without_changing_clipboard(self):
         original_run=subprocess.run
         prefix=Path.home()/'.local/bin'

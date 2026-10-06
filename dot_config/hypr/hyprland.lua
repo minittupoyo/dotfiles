@@ -301,12 +301,12 @@ hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(),   { mouse = true })
 hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
 
 -- Laptop multimedia keys for volume and LCD brightness
-hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+"), { locked = true, repeating = true })
-hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"),      { locked = true, repeating = true })
-hl.bind("XF86AudioMute",        hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"),     { locked = true, repeating = true })
-hl.bind("XF86AudioMicMute",     hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"),   { locked = true, repeating = true })
-hl.bind("XF86MonBrightnessUp",  hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%+"),                  { locked = true, repeating = true })
-hl.bind("XF86MonBrightnessDown",hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%-"),                  { locked = true, repeating = true })
+hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("/home/mimi/.local/bin/material-audio volume-up"),       { locked = true, repeating = true })
+hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("/home/mimi/.local/bin/material-audio volume-down"),     { locked = true, repeating = true })
+hl.bind("XF86AudioMute",        hl.dsp.exec_cmd("/home/mimi/.local/bin/material-audio mute-toggle"),     { locked = true, repeating = true })
+hl.bind("XF86AudioMicMute",     hl.dsp.exec_cmd("/home/mimi/.local/bin/material-audio mic-mute-toggle"), { locked = true, repeating = true })
+hl.bind("XF86MonBrightnessUp",  hl.dsp.exec_cmd("/home/mimi/.local/bin/material-display up"),             { locked = true, repeating = true })
+hl.bind("XF86MonBrightnessDown",hl.dsp.exec_cmd("/home/mimi/.local/bin/material-display down"),           { locked = true, repeating = true })
 
 -- Requires playerctl
 hl.bind("XF86AudioNext",  hl.dsp.exec_cmd("playerctl next"),       { locked = true })
@@ -372,6 +372,6 @@ hl.bind(mainMod .. " + SHIFT + W", hl.dsp.exec_cmd("quickshell ipc -c material-s
 hl.bind(mainMod .. " + SHIFT + C", hl.dsp.exec_cmd("quickshell ipc -c material-shell call clipboard toggle"))
 hl.bind(mainMod .. " + N", hl.dsp.exec_cmd("quickshell ipc -c material-shell call notifications toggle"))
 hl.bind(mainMod .. " + COMMA", hl.dsp.exec_cmd("quickshell ipc -c material-shell call settings toggle"))
-hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("/home/mimi/.config/quickshell/material-shell/lock.sh"))
+hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("/home/mimi/.local/bin/material-lock"))
 hl.bind("PRINT", hl.dsp.exec_cmd("/home/mimi/.local/bin/material-screenshot all"))
 hl.bind("SHIFT + PRINT", hl.dsp.exec_cmd("/home/mimi/.local/bin/material-screenshot region"))

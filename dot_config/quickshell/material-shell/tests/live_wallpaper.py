@@ -9,7 +9,8 @@ import subprocess
 import tempfile
 
 root = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(root))
+library_root = Path.home()/'.local/lib/material-shell'
+sys.path.insert(0, str(library_root))
 import wallpaper_backend
 with tempfile.TemporaryDirectory(prefix='material-wallpaper-tests-') as directory:
     tmp = Path(directory)
@@ -19,8 +20,12 @@ with tempfile.TemporaryDirectory(prefix='material-wallpaper-tests-') as director
         path = tmp / name; shutil.copyfile(source, path)
         images.append({'name': name, 'path': str(path), 'url': path.as_uri()})
     library = {'images': images, 'current': source, 'directories': [str(tmp)]}
-    (tmp / 'wallpapers.py').write_text('print(' + repr(json.dumps(library)) + ')\n')
-    (tmp / 'palette.py').write_text("import sys,time\ntime.sleep(.1)\nif sys.argv[1].endswith('failure.png'):\n print('Test generation failure',file=sys.stderr)\n sys.exit(1)\n")
+    scanner = tmp / 'material-wallpapers'
+    scanner.write_text('#!/usr/bin/env python3\nprint(' + repr(json.dumps(library)) + ')\n')
+    scanner.chmod(0o755)
+    palette = tmp / 'material-palette'
+    palette.write_text("#!/usr/bin/env python3\nimport sys,time\ntime.sleep(.1)\nif sys.argv[1].endswith('failure.png'):\n print('Test generation failure',file=sys.stderr)\n sys.exit(1)\n")
+    palette.chmod(0o755)
     fixture = '''import Quickshell
 import QtQuick
 import QtTest
@@ -89,8 +94,9 @@ ShellRoot {
         }
     }
 }'''
-    (tmp / 'shell.qml').write_text(fixture.replace('@@IMPORT@@', root.as_uri()))
-    result = subprocess.run(['quickshell', '-p', str(tmp), '--no-color'], env=dict(os.environ, FONTCONFIG_FILE=str(root / 'fonts.conf')),
+    (tmp / 'material-shell').symlink_to(root, target_is_directory=True)
+    (tmp / 'shell.qml').write_text(fixture.replace('@@IMPORT@@', './material-shell'))
+    result = subprocess.run(['quickshell', '-p', str(tmp), '--no-color'], env=dict(os.environ, FONTCONFIG_FILE=str(root / 'fonts.conf'), MATERIAL_SHELL_CLI_DIR=str(tmp)),
                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, timeout=25)
     print(result.stdout)
     if result.returncode != 0 or 'passed=6 failed=0' not in result.stdout:

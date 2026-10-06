@@ -14,7 +14,6 @@ ShellRoot {
   property bool opened:true
   visible:opened
   screen:Quickshell.screens[Number(Quickshell.env("PANEL_TEST_SCREEN")||"0")]
-  helperPath:Quickshell.shellDir+"/fake_session.py"
   onDismissed:opened=false
   TestCase {
    name:"SessionConfirmation";when:true
@@ -30,9 +29,12 @@ ShellRoot {
 }'''
 with tempfile.TemporaryDirectory(prefix='material-session-tests-') as directory:
  tmp=Path(directory)
- (tmp/'shell.qml').write_text(fixture.replace('@@IMPORT@@',root.as_uri()))
- (tmp/'fake_session.py').write_text("from pathlib import Path\nimport sys\nif sys.argv[1]=='reboot':\n print('Simulated failure',file=sys.stderr)\n sys.exit(1)\nPath(__file__).with_name('executed').write_text(sys.argv[1])\n")
- result=subprocess.run(['quickshell','-p',str(tmp),'--no-color'],env=dict(os.environ,FONTCONFIG_FILE=str(root/'fonts.conf')),capture_output=True,text=True,timeout=20)
+ (tmp/'material-shell').symlink_to(root,target_is_directory=True)
+ (tmp/'shell.qml').write_text(fixture.replace('@@IMPORT@@','./material-shell'))
+ helper=tmp/'material-session'
+ helper.write_text("#!/usr/bin/env python3\nfrom pathlib import Path\nimport sys\nif sys.argv[1]=='reboot':\n print('Simulated failure',file=sys.stderr)\n sys.exit(1)\nPath(__file__).with_name('executed').write_text(sys.argv[1])\n")
+ helper.chmod(0o755)
+ result=subprocess.run(['quickshell','-p',str(tmp),'--no-color'],env=dict(os.environ,FONTCONFIG_FILE=str(root/'fonts.conf'),MATERIAL_SHELL_CLI_DIR=str(tmp)),capture_output=True,text=True,timeout=20)
  print(result.stdout+result.stderr)
  assert 'passed=6 failed=0' in result.stdout+result.stderr
  assert (tmp/'executed').read_text()=='logout'

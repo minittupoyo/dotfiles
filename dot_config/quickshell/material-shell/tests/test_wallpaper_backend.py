@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-spec = importlib.util.spec_from_file_location('backend', Path(__file__).resolve().parents[1] / 'wallpaper_backend.py')
+spec = importlib.util.spec_from_file_location('backend', Path.home()/'.local/lib/material-shell/wallpaper_backend.py')
 backend = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(backend)
 

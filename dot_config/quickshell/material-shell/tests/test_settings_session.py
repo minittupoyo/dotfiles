@@ -6,11 +6,26 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-ROOT=Path(__file__).resolve().parents[1]
+ROOT=Path.home()/'.local/lib/material-shell'
 sys.path.insert(0,str(ROOT))
 import settings
 import session
 import services
+import audio
+import display
+
+class HotkeyTests(unittest.TestCase):
+    def test_audio_actions_are_fixed_commands(self):
+        with patch.object(audio.subprocess, 'run') as run:
+            audio.execute('volume-up')
+            run.assert_called_once_with([audio.binary('wpctl'), 'set-volume', '-l', '1', '@DEFAULT_AUDIO_SINK@', '5%+'], check=True)
+        with self.assertRaises(ValueError): audio.execute('arbitrary command')
+
+    def test_display_actions_are_fixed_commands(self):
+        with patch.object(display.subprocess, 'run') as run:
+            display.execute('down')
+            run.assert_called_once_with([display.binary('brightnessctl'), '-e4', '-n2', 'set', '5%-'], check=True)
+        with self.assertRaises(ValueError): display.execute('arbitrary command')
 
 class SettingsTests(unittest.TestCase):
     def test_settings_roundtrip_and_failed_save_retains_file(self):

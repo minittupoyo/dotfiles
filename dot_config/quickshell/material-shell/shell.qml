@@ -10,6 +10,7 @@ ShellRoot {
     id: root
     Component.onCompleted: Theme.reducedMotion = Quickshell.env("MATERIAL_SHELL_REDUCED_MOTION") === "1"
     property string activePanel: ""
+    readonly property string cliDir: Quickshell.env("MATERIAL_SHELL_CLI_DIR") || ((Quickshell.env("HOME") || "") + "/.local/bin")
     property var panelScreen: Quickshell.screens[0] ?? null
     function volumeIcon(volume, muted) {
         if (muted) return "volume_off";
@@ -53,9 +54,10 @@ ShellRoot {
         sourceComponent: NotificationService { screen: root.activeScreen() }
     }
     property bool captureActive: false
+    property var pendingCaptureCommand: []
     function capture(mode) {
         if (captureActive || captureDispatch.running || !["all", "monitor", "region"].includes(mode)) return;
-        const command = [(Quickshell.env("HOME") || "") + "/.local/bin/material-screenshot", mode];
+        const command = [root.cliDir + "/material-screenshot", mode];
         if (mode === "monitor") {
             const output = panelScreen?.name || Hyprland.focusedMonitor?.name || "";
             if (!output) { osd.show("screenshot_monitor", "ディスプレイを特定できません", 0, root.activeScreen()); return; }
@@ -63,19 +65,32 @@ ShellRoot {
         }
         capturePanel.message = "";
         captureActive = true;
-        captureLaunchTimeout.restart();
+        pendingCaptureCommand = command;
         closePanels();
-        // Ask Hyprland to spawn the selector as a normal desktop process, outside Quickshell's layer client.
-        captureDispatch.command = ["/usr/bin/hyprctl", "eval", "hl.exec_cmd(" + JSON.stringify(command.join(" ")) + ")"];
-        Qt.callLater(() => captureDispatch.running = true);
+        // Let the compositor process the layer-surface hide before grim samples the screen.
+        captureHideDelay.restart();
     }
     function cancelCapture() {
+        captureHideDelay.stop();
+        pendingCaptureCommand = [];
         captureActive = false;
         captureLaunchTimeout.stop();
         captureTimeout.stop();
         capturePanel.message = "撮影をキャンセルしました";
-        captureDispatch.command = ["/usr/bin/hyprctl", "eval", "hl.exec_cmd(" + JSON.stringify((Quickshell.env("HOME") || "") + "/.local/bin/material-screenshot cancel") + ")"];
+        captureDispatch.command = ["/usr/bin/hyprctl", "eval", "hl.exec_cmd(" + JSON.stringify(root.cliDir + "/material-screenshot cancel") + ")"];
         captureDispatch.running = true;
+    }
+    Timer {
+        id: captureHideDelay
+        interval: 120
+        onTriggered: {
+            if (!root.captureActive || root.pendingCaptureCommand.length === 0) return;
+            // Run the capture process outside Quickshell's layer client.
+            captureDispatch.command = ["/usr/bin/hyprctl", "eval", "hl.exec_cmd(" + JSON.stringify(root.pendingCaptureCommand.join(" ")) + ")"];
+            root.pendingCaptureCommand = [];
+            captureLaunchTimeout.restart();
+            captureDispatch.running = true;
+        }
     }
     Timer {
         id: captureLaunchTimeout
@@ -140,7 +155,7 @@ ShellRoot {
     }
     Process {
         id: settingsLoader
-        command: ["python3", Quickshell.shellDir + "/settings.py", "get"]
+        command: [root.cliDir + "/material-settings", "get"]
         running: true
         stdout: SplitParser { onRead: data => { try { Settings.values = JSON.parse(data); Settings.error = ""; } catch (error) { Settings.error = "設定を読み込めません"; } } }
         stderr: SplitParser { onRead: data => Settings.error = data }
@@ -154,7 +169,7 @@ ShellRoot {
     }
     Connections {
         target: Settings
-        function onSaveRequested(data) { settingsSaver.command = ["python3", Quickshell.shellDir + "/settings.py", "set", JSON.stringify(data)]; settingsSaver.running = true; }
+        function onSaveRequested(data) { settingsSaver.command = [root.cliDir + "/material-settings", "set", JSON.stringify(data)]; settingsSaver.running = true; }
     }
     Process {
         id: settingsSaver
@@ -162,13 +177,6 @@ ShellRoot {
         stderr: SplitParser { onRead: data => Settings.error = data }
         onExited: (code, status) => { if (code !== 0 && !Settings.error) Settings.error = "保存できませんでした"; Settings.saving = false; }
     }
-    Process {
-        id: backgroundServices
-        command: ["python3", Quickshell.shellDir + "/services.py"]
-        running: Quickshell.env("MATERIAL_SHELL_INDEPENDENT") === "1"
-        onExited: servicesRestart.restart()
-    }
-    Timer { id: servicesRestart; interval: 5000; onTriggered: backgroundServices.running = Quickshell.env("MATERIAL_SHELL_INDEPENDENT") === "1" }
     Osd { id: osd }
     Connections {
         target: mediaService.player
@@ -264,14 +272,6 @@ ShellRoot {
         onFileChanged: reload()
         onLoaded: Theme.acceptPalette(text())
     }
-    Process {
-        // Monitor the independent awww backend and wallpaper palette.
-        id: paletteWatcher
-        command: ["python3", Quickshell.shellDir + "/palette.py", "--watch"]
-        running: true
-        onExited: paletteRestart.restart()
-    }
-    Timer { id: paletteRestart; interval: 5000; onTriggered: paletteWatcher.running = true }
     IpcHandler {
         target: "theme"
         function status(): string { return JSON.stringify({path: Theme.palettePath, colors: Theme.palette}); }
@@ -279,18 +279,22 @@ ShellRoot {
     readonly property var sink: Pipewire.defaultAudioSink
     PwObjectTracker { objects: root.sink ? [root.sink] : [] }
     SystemClock { id: clock; precision: SystemClock.Minutes }
-    Process {
-        id: sampler
-        command: ["python3", Quickshell.shellDir + "/stats.py"]
-        running: true
-        stdout: SplitParser {
-            onRead: data => {
-                try { const next = JSON.parse(data); if (root.stats.brightness != null && next.brightness != null && root.stats.brightness !== next.brightness) osd.show(root.brightnessIcon(next.brightness), "明るさ " + next.brightness + "%", next.brightness / 100, root.activeScreen()); root.stats = next; } catch (error) { console.warn("Invalid stats:", error); }
-            }
+    FileView {
+        id: statsFile
+        path: (Quickshell.env("XDG_RUNTIME_DIR") || "/run/user/" + (Quickshell.env("UID") || "1000")) + "/material-shell/stats.json"
+        watchChanges: true
+        preload: true
+        printErrors: false
+        onFileChanged: reload()
+        onLoaded: {
+            try {
+                const next = JSON.parse(text());
+                if (root.stats.brightness != null && next.brightness != null && root.stats.brightness !== next.brightness)
+                    osd.show(root.brightnessIcon(next.brightness), "明るさ " + next.brightness + "%", next.brightness / 100, root.activeScreen());
+                root.stats = next;
+            } catch (error) { console.warn("Invalid stats:", error); }
         }
-        onExited: restart.restart()
     }
-    Timer { id: restart; interval: 5000; onTriggered: sampler.running = true }
     Variants {
         model: Quickshell.screens
         PanelWindow {
