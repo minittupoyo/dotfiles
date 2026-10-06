@@ -373,5 +373,5 @@ hl.bind(mainMod .. " + SHIFT + C", hl.dsp.exec_cmd("quickshell ipc -c material-s
 hl.bind(mainMod .. " + N", hl.dsp.exec_cmd("quickshell ipc -c material-shell call notifications toggle"))
 hl.bind(mainMod .. " + COMMA", hl.dsp.exec_cmd("quickshell ipc -c material-shell call settings toggle"))
 hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("/home/mimi/.config/quickshell/material-shell/lock.sh"))
-hl.bind("PRINT", hl.dsp.exec_cmd("quickshell ipc -c material-shell call capture all"))
-hl.bind("SHIFT + PRINT", hl.dsp.exec_cmd("quickshell ipc -c material-shell call capture region"))
+hl.bind("PRINT", hl.dsp.exec_cmd("/home/mimi/.local/bin/material-screenshot all"))
+hl.bind("SHIFT + PRINT", hl.dsp.exec_cmd("/home/mimi/.local/bin/material-screenshot region"))

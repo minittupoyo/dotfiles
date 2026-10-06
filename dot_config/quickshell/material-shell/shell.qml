@@ -46,24 +46,69 @@ ShellRoot {
     NotificationCenter { opened: root.activePanel === "notifications"; screen: root.panelScreen; service: notificationLoader.item; onDismissed: root.activePanel = "" }
     MediaService { id: mediaService }
     AudioPanel { id: audioPanel; opened: root.activePanel === "audio"; screen: root.panelScreen; onDismissed: root.activePanel = "" }
-    CapturePanel { id: capturePanel; opened: root.activePanel === "capture"; screen: root.panelScreen; onDismissed: root.activePanel = ""; onCaptureRequested: mode => root.capture(mode) }
+    CapturePanel { id: capturePanel; opened: root.activePanel === "capture"; screen: root.panelScreen; busy: root.captureActive || captureDispatch.running; onDismissed: root.activePanel = ""; onCaptureRequested: mode => root.capture(mode); onCancelRequested: root.cancelCapture() }
     Loader {
         id: notificationLoader
         active: Quickshell.env("MATERIAL_SHELL_INDEPENDENT") === "1"
         sourceComponent: NotificationService { screen: root.activeScreen() }
     }
+    property bool captureActive: false
     function capture(mode) {
-        if (captureProcess.running || captureDelay.running || !["all", "region"].includes(mode)) return;
-        closePanels();
-        captureProcess.command = ["python3", Quickshell.shellDir + "/capture.py", mode];
+        if (captureActive || captureDispatch.running || !["all", "monitor", "region"].includes(mode)) return;
+        const command = [(Quickshell.env("HOME") || "") + "/.local/bin/material-screenshot", mode];
+        if (mode === "monitor") {
+            const output = panelScreen?.name || Hyprland.focusedMonitor?.name || "";
+            if (!output) { osd.show("screenshot_monitor", "ディスプレイを特定できません", 0, root.activeScreen()); return; }
+            command.push("--output", output);
+        }
         capturePanel.message = "";
-        captureDelay.start();
+        captureActive = true;
+        captureLaunchTimeout.restart();
+        closePanels();
+        // Ask Hyprland to spawn the selector as a normal desktop process, outside Quickshell's layer client.
+        captureDispatch.command = ["/usr/bin/hyprctl", "eval", "hl.exec_cmd(" + JSON.stringify(command.join(" ")) + ")"];
+        Qt.callLater(() => captureDispatch.running = true);
     }
-    Timer { id: captureDelay; interval: 250; onTriggered: captureProcess.running = true }
+    function cancelCapture() {
+        captureActive = false;
+        captureLaunchTimeout.stop();
+        captureTimeout.stop();
+        capturePanel.message = "撮影をキャンセルしました";
+        captureDispatch.command = ["/usr/bin/hyprctl", "eval", "hl.exec_cmd(" + JSON.stringify((Quickshell.env("HOME") || "") + "/.local/bin/material-screenshot cancel") + ")"];
+        captureDispatch.running = true;
+    }
+    Timer {
+        id: captureLaunchTimeout
+        interval: 3000
+        onTriggered: {
+            if (root.captureActive && !captureDispatch.running) {
+                root.captureActive = false;
+                captureTimeout.stop();
+                capturePanel.message = "撮影を開始できませんでした";
+                osd.show("screenshot_monitor", "撮影を開始できませんでした", 0, root.activeScreen());
+            }
+        }
+    }
+    Timer {
+        id: captureTimeout
+        interval: 60000
+        onTriggered: {
+            root.cancelCapture();
+            capturePanel.message = "時間切れのため撮影を終了しました";
+            osd.show("screenshot_monitor", "スクリーンショットを終了しました", 0, root.activeScreen());
+        }
+    }
     Process {
-        id: captureProcess
-        stdout: SplitParser { onRead: data => { capturePanel.message = "保存しました: " + data; osd.show("screenshot_monitor", "画像を保存しました", 1, root.activeScreen()); } }
-        stderr: SplitParser { onRead: data => capturePanel.message = "撮影できませんでした: " + data }
+        id: captureDispatch
+        stderr: SplitParser { onRead: data => capturePanel.message = data.trim() }
+        onExited: (code, status) => {
+            if (code !== 0) {
+                root.captureActive = false;
+                captureLaunchTimeout.stop();
+                captureTimeout.stop();
+                osd.show("screenshot_monitor", "撮影を起動できませんでした", 0, root.activeScreen());
+            }
+        }
     }
     IpcHandler { target: "settings"; function toggle(): void { root.togglePanel("settings"); } function open(): void { root.openPanel("settings"); } function close(): void { root.activePanel = ""; } function status(): string { return JSON.stringify({visible:root.activePanel === "settings",values:Settings.values,error:Settings.error,saving:Settings.saving}); } }
     IpcHandler { target: "session"; function toggle(): void { root.togglePanel("session"); } function open(): void { root.openPanel("session"); } function close(): void { root.activePanel = ""; } function status(): string { return JSON.stringify({visible:root.activePanel === "session",pending:sessionPanel.pendingAction,executing:sessionPanel.executing,error:sessionPanel.error}); } }
@@ -71,7 +116,28 @@ ShellRoot {
     IpcHandler { target: "notifications"; function toggle(): void { root.togglePanel("notifications"); } function close(): void { root.activePanel = ""; } function status(): string { return JSON.stringify({active:!!notificationLoader.item,count:notificationLoader.item?.history.length ?? 0,toasts:notificationLoader.item?.toasts.length ?? 0,dnd:Settings.values.dnd}); } }
     IpcHandler { target: "media"; function toggle(): void { root.togglePanel("media"); } function open(): void { root.openPanel("media"); } function close(): void { root.activePanel = ""; } function status(): string { return JSON.stringify({visible:root.activePanel === "media",players:mediaService.players.length,connected:!!mediaService.player,playing:mediaService.player?.isPlaying ?? false}); } }
     IpcHandler { target: "audio"; function toggle(): void { root.togglePanel("audio"); } function open(): void { root.openPanel("audio"); } function close(): void { root.activePanel = ""; } function status(): string { return JSON.stringify({visible: audioPanel.visible, devices: audioPanel.devices.map(n => ({name:n.description || n.name,isSink:n.isSink})),output:audioPanel.output?.name,input:audioPanel.input?.name}); } }
-    IpcHandler { target: "capture"; function toggle(): void { root.togglePanel("capture"); } function all(): void { root.capture("all"); } function region(): void { root.capture("region"); } }
+    IpcHandler {
+        target: "capture"
+        function toggle(): void { root.togglePanel("capture"); }
+        function open(): void { root.openPanel("capture"); }
+        function all(): void { root.capture("all"); }
+        function monitor(): void { root.capture("monitor"); }
+        function region(): void { root.capture("region"); }
+        function cancel(): void { root.cancelCapture(); }
+        function result(status: string, copied: string, filename: string): void {
+            if (status === "started") { root.captureActive = true; captureLaunchTimeout.stop(); captureTimeout.restart(); return; }
+            root.captureActive = false;
+            captureLaunchTimeout.stop(); captureTimeout.stop();
+            if (status === "saved") {
+                capturePanel.message = copied === "true" ? "保存しました: " + filename : "保存しましたが、クリップボードへコピーできませんでした: " + filename;
+                osd.show("screenshot_monitor", copied === "true" ? "スクリーンショットを保存しました" : "保存しました・コピーできません", 1, root.activeScreen());
+            } else if (status === "error") {
+                capturePanel.message = "撮影できませんでした";
+                osd.show("screenshot_monitor", "撮影できませんでした", 0, root.activeScreen());
+            } else if (status === "cancelled") capturePanel.message = "範囲選択をキャンセルしました";
+        }
+        function status(): string { return JSON.stringify({visible:root.activePanel === "capture",busy:root.captureActive,launcherRunning:captureDispatch.running}); }
+    }
     Process {
         id: settingsLoader
         command: ["python3", Quickshell.shellDir + "/settings.py", "get"]

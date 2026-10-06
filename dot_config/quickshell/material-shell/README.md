@@ -142,13 +142,13 @@ python3 ~/.config/quickshell/material-shell/tests/test_wallpaper_backend.py
 | Super+N | 通知センター |
 | Super+Shift+C | クリップボード履歴 |
 | Super+L | 独立ロック画面 |
-| Print / Shift+Print | 全画面 / 範囲キャプチャ |
+| Print / Shift+Print | 全ディスプレイ / 範囲キャプチャ |
 
 各パネルはEsc・外側クリックで閉じます。トレイは左クリックで起動、右クリックで独自メニュー。
 通知は置換・期限・アクション・履歴・DNDに対応。本文はプレーンテキストです。
 クリップボードはテキスト・画像を最大100件保存し、検索・再コピー・個別削除できます。
 従来のNoctalia履歴はそのまま保存し、新しい履歴は独立したデータベースを使います。
-キャプチャは `~/Pictures/Screenshots`に保存してPNGとしてコピーします。
+Printキーとキャプチャパネルから現在のディスプレイ・全ディスプレイ・範囲を撮影できます。範囲は独立プログラム `~/.local/bin/material-screenshot` がslurpを直接起動し、ドラッグして離すと撮影、Escでキャンセルします。画像は `~/Pictures/Screenshots`へPNG保存してクリップボードにもコピーします。
 音量・ミュート・明るさの変更でOSDを表示します（明るさはバックライト搭載時）。
 曲が変わるとアルバムアート、曲名、アーティストを含むメディアOSDを4秒間表示します。
 

@@ -10,6 +10,7 @@ PanelWindow {
     property bool attachedToBar: false
     property bool opened: false
     property bool exiting: false
+    property bool animateClose: true
     property real offsetScale: opened ? 0 : 1
     default property alias panelContent: content.data
     signal dismissed()
@@ -18,7 +19,7 @@ PanelWindow {
     exclusionMode: ExclusionMode.Ignore
     color: "transparent"
     visible: opened || exiting
-    onOpenedChanged: exiting = !opened
+    onOpenedChanged: exiting = !opened && animateClose
     onOffsetScaleChanged: if (!opened && offsetScale >= 1) exiting = false
     WlrLayershell.namespace: "material-shell-panel"
     WlrLayershell.layer: WlrLayer.Overlay
