@@ -72,6 +72,7 @@ ShellRoot {
         playerService: mediaService
         captureActive: root.captureActive || captureDispatch.running
         onDismissed: root.activePanel = ""
+        onMessageRequested: (text, failed) => osd.showMessage(text, failed, root.panelScreen)
         onPanelRequested: name => {
             if (name === "wallpaper") root.toggleWallpaper(root.panelScreen);
             else if (name === "media") root.openControlTab("media", root.panelScreen);
@@ -80,7 +81,7 @@ ShellRoot {
             else root.openControlTab(name, root.panelScreen);
         }
     }
-    SessionMenu { id: sessionPanel; opened: root.activePanel === "session"; screen: root.panelScreen; onDismissed: root.activePanel = "" }
+    SessionMenu { id: sessionPanel; opened: root.activePanel === "session"; screen: root.panelScreen; onDismissed: root.activePanel = ""; onMessageRequested: (text, failed) => osd.showMessage(text, failed, root.panelScreen) }
     TrayMenu { id: trayMenu; opened: root.activePanel === "tray"; screen: root.panelScreen; onDismissed: root.activePanel = "" }
     TrayOverflow {
         id: trayOverflow
@@ -126,6 +127,7 @@ ShellRoot {
         captureLaunchTimeout.stop();
         captureTimeout.stop();
         controlPanel.message = "撮影をキャンセルしました";
+        osd.showMessage("撮影をキャンセルしました", false, root.activeScreen());
         captureDispatch.command = ["/usr/bin/hyprctl", "eval", "hl.exec_cmd(" + JSON.stringify(root.cliDir + "/material-screenshot cancel") + ")"];
         captureDispatch.running = true;
     }
@@ -149,7 +151,7 @@ ShellRoot {
                 root.captureActive = false;
                 captureTimeout.stop();
                 controlPanel.message = "撮影を開始できませんでした";
-                osd.show("screenshot_monitor", "撮影を開始できませんでした", 0, root.activeScreen());
+                osd.showMessage("撮影を開始できませんでした", true, root.activeScreen());
             }
         }
     }
@@ -159,7 +161,7 @@ ShellRoot {
         onTriggered: {
             root.cancelCapture();
             controlPanel.message = "時間切れのため撮影を終了しました";
-            osd.show("screenshot_monitor", "スクリーンショットを終了しました", 0, root.activeScreen());
+            osd.showMessage("時間切れのため撮影を終了しました", false, root.activeScreen());
         }
     }
     Process {
@@ -170,7 +172,7 @@ ShellRoot {
                 root.captureActive = false;
                 captureLaunchTimeout.stop();
                 captureTimeout.stop();
-                osd.show("screenshot_monitor", "撮影を起動できませんでした", 0, root.activeScreen());
+                osd.showMessage("撮影を起動できませんでした", true, root.activeScreen());
             }
         }
     }
@@ -199,7 +201,10 @@ ShellRoot {
             } else if (status === "error") {
                 controlPanel.message = "撮影できませんでした";
                 osd.show("screenshot_monitor", "撮影できませんでした", 0, root.activeScreen());
-            } else if (status === "cancelled") controlPanel.message = "範囲選択をキャンセルしました";
+            } else if (status === "cancelled") {
+                controlPanel.message = "範囲選択をキャンセルしました";
+                osd.showMessage("範囲選択をキャンセルしました", false, root.activeScreen());
+            }
         }
         function status(): string { return JSON.stringify({visible:root.activePanel === "control" && controlPanel.tab === "capture",busy:root.captureActive,launcherRunning:captureDispatch.running}); }
     }
@@ -261,7 +266,8 @@ ShellRoot {
         target: "osd"
         function volume(percentage: int): void { osd.show(root.volumeIcon(percentage / 100, false), "音量 " + percentage + "%", percentage / 100, root.activeScreen()); }
         function brightness(percentage: int): void { osd.show(root.brightnessIcon(percentage), "明るさ " + percentage + "%", percentage / 100, root.activeScreen()); }
-        function status(): string { return JSON.stringify({visible:osd.visible,value:osd.value,screen:osd.screen?.name ?? ""}); }
+        function message(text: string, failed: bool): void { osd.showMessage(text, failed, root.activeScreen()); }
+        function status(): string { return JSON.stringify({visible:osd.visible,value:osd.value,messageMode:osd.messageMode,label:osd.label,screen:osd.screen?.name ?? ""}); }
     }
     property real lastVolume: -1
     property var lastMuted: null

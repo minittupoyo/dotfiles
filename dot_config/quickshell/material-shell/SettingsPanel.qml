@@ -11,6 +11,7 @@ PanelFrame {
     property string message: ""
     signal wallpaperRequested()
     signal panelRequested(string name)
+    signal messageRequested(string text, bool failed)
 
     onVisibleChanged: if (visible) { draft = Object.assign({}, Settings.values); message = ""; }
 
@@ -28,12 +29,20 @@ PanelFrame {
             dnd: false, osd: true, autoLockMinutes: 0, screenOffMinutes: 0
         };
         message = "初期値を読み込みました（未保存）";
+        messageRequested(message, false);
     }
 
     Connections {
         target: Settings
         function onSavingChanged() {
-            if (!Settings.saving && !Settings.error) panel.message = "設定を保存しました";
+            if (!Settings.saving) {
+                if (Settings.error) {
+                    panel.messageRequested(Settings.error, true);
+                } else {
+                    panel.message = "設定を保存しました";
+                    panel.messageRequested(panel.message, false);
+                }
+            }
         }
     }
 
@@ -76,6 +85,7 @@ PanelFrame {
                 onPanelRequested: name => panel.panelRequested(name)
                 onResetRequested: panel.resetDefaults()
                 onSaveRequested: targetDraft => Settings.save(targetDraft)
+                onMessageRequested: (text, failed) => panel.messageRequested(text, failed)
             }
         }
 
@@ -84,17 +94,6 @@ PanelFrame {
             Layout.fillWidth: true
             height: 1
             color: Theme.outlineVariant
-        }
-
-        Text {
-            Layout.fillWidth: true
-            visible: text !== ""
-            text: Settings.error !== "" ? Settings.error : panel.message
-            color: Settings.error !== "" ? Theme.error : Theme.primary
-            wrapMode: Text.Wrap
-            font.family: Theme.fontFamily
-            font.pixelSize: Theme.bodySize
-            font.weight: Font.Medium
         }
 
         RowLayout {
@@ -116,6 +115,7 @@ PanelFrame {
                 onClicked: {
                     panel.draft = Object.assign({}, Settings.values);
                     panel.message = "";
+                    panel.messageRequested("変更を元に戻しました", false);
                 }
             }
 

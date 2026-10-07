@@ -8,6 +8,7 @@ PanelFrame {
     property string pendingAction: ""
     property string error: ""
     property bool executing: false
+    signal messageRequested(string text, bool failed)
     readonly property string cliDir: Quickshell.env("MATERIAL_SHELL_CLI_DIR") || ((Quickshell.env("HOME") || "") + "/.local/bin")
     property string executorPath: cliDir + "/material-session"
     panelHeight: panel.pendingAction === "" ? Theme.sessionPanelHeight : Theme.sessionConfirmHeight
@@ -32,8 +33,12 @@ PanelFrame {
         stderr: SplitParser { onRead: data => panel.error = data }
         onExited: (code, status) => {
             panel.executing = false;
-            if (code === 0) panel.dismissed();
-            else panel.error = panel.error || "操作を実行できませんでした";
+            if (code === 0) {
+                panel.dismissed();
+            } else {
+                panel.error = panel.error || "操作を実行できませんでした";
+                panel.messageRequested(panel.error, true);
+            }
         }
     }
     ColumnLayout {
@@ -63,7 +68,6 @@ PanelFrame {
             }
         }
         Item { Layout.fillHeight: true }
-        Text { Layout.fillWidth: true; visible: text !== ""; text: panel.error; color: Theme.error; font.family: Theme.fontFamily; font.pixelSize: Theme.bodySize; wrapMode: Text.Wrap }
         RowLayout {
             visible: panel.pendingAction !== ""
             Layout.fillWidth: true

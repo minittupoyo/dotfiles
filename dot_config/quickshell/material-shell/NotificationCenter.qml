@@ -5,6 +5,7 @@ PanelFrame {
     id: panel
     attachedToBar: true
     property var service: null
+    signal messageRequested(string text, bool failed)
     ColumnLayout {
         anchors.fill: parent
         spacing: Theme.space16
@@ -56,6 +57,6 @@ PanelFrame {
             }
             PanelEmptyState { anchors.fill: parent; visible: list.count === 0; icon: "notifications"; title: "通知はありません"; description: "受け取った通知はここに表示されます。" }
         }
-        RowLayout { Layout.fillWidth: true; Item { Layout.fillWidth: true } ShellButton { text: "履歴を消去"; flat: true; destructive: true; enabled: (panel.service?.history.length ?? 0) > 0; onClicked: panel.service.clearHistory() } }
+        RowLayout { Layout.fillWidth: true; Item { Layout.fillWidth: true } ShellButton { text: "履歴を消去"; flat: true; destructive: true; enabled: (panel.service?.history.length ?? 0) > 0; onClicked: { panel.service.clearHistory(); panel.messageRequested("通知履歴を消去しました", false); } } }
     }
 }

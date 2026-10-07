@@ -11,6 +11,7 @@ Item {
     property string error: ""
     property string message: ""
     property string operation: "list"
+    signal messageRequested(string text, bool failed)
     readonly property string cliDir: Quickshell.env("MATERIAL_SHELL_CLI_DIR") || ((Quickshell.env("HOME") || "") + "/.local/bin")
     readonly property var results: entries.filter(entry => entry.preview.normalize("NFKC").toLocaleLowerCase().includes(search.text.normalize("NFKC").toLocaleLowerCase()))
     onActiveChanged: if (active) { search.text = ""; refresh(); Qt.callLater(search.focusInput); }
@@ -22,9 +23,19 @@ Item {
         stdout: SplitParser { onRead: data => { if (page.operation === "list") { try { page.entries = JSON.parse(data); } catch (error) { page.error = "履歴を読み込めません"; } } } }
         stderr: SplitParser { onRead: data => page.error = data.trim() }
         onExited: (code, status) => {
-            if (code !== 0) { page.error = page.error || "操作に失敗しました"; return; }
-            if (page.operation === "copy") page.message = "クリップボードにコピーしました";
-            else if (page.operation === "delete") Qt.callLater(page.refresh);
+            if (code !== 0) {
+                page.error = page.error || "操作に失敗しました";
+                page.messageRequested(page.error, true);
+                return;
+            }
+            if (page.operation === "copy") {
+                page.message = "クリップボードにコピーしました";
+                page.messageRequested(page.message, false);
+            } else if (page.operation === "delete") {
+                page.message = "履歴から削除しました";
+                page.messageRequested(page.message, false);
+                Qt.callLater(page.refresh);
+            }
         }
     }
     ColumnLayout {
@@ -78,7 +89,7 @@ Item {
         }
         RowLayout {
             Layout.fillWidth: true
-            Text { Layout.fillWidth: true; text: page.error || page.message || "↑ ↓ 選択 · Enter コピー"; color: page.error ? Theme.error : Theme.surfaceVariantText; font.family: Theme.fontFamily; font.pixelSize: Theme.labelSize; elide: Text.ElideRight }
+            Text { Layout.fillWidth: true; text: "↑ ↓ 選択 · Enter コピー"; color: Theme.surfaceVariantText; font.family: Theme.fontFamily; font.pixelSize: Theme.labelSize; elide: Text.ElideRight }
             ShellButton { text: "削除"; flat: true; destructive: true; enabled: page.results.length > 0 && !worker.running; onClicked: page.operate("delete", page.results[page.selectedIndex]?.id) }
         }
     }

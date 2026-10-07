@@ -23,6 +23,6 @@ Item {
         ShellButton { Layout.fillWidth: true; visible: page.busy; text: "撮影をキャンセル"; icon: "close"; onClicked: page.cancelRequested() }
         Item { Layout.fillHeight: true }
         PanelSection { title: "保存とコピー"; description: "PNGをPictures/Screenshotsへ保存し、クリップボードにもコピーします。"; icon: "content_paste" }
-        Text { Layout.fillWidth: true; text: page.busy ? "範囲をドラッグして離すと撮影します。Escでキャンセルできます。" : page.message; textFormat: Text.PlainText; wrapMode: Text.WrapAnywhere; color: Theme.surfaceVariantText; font.family: Theme.fontFamily; font.pixelSize: Theme.bodySize }
+        Text { Layout.fillWidth: true; visible: page.busy; text: "範囲をドラッグして離すと撮影します。Escでキャンセルできます。"; textFormat: Text.PlainText; wrapMode: Text.WrapAnywhere; color: Theme.surfaceVariantText; font.family: Theme.fontFamily; font.pixelSize: Theme.bodySize }
     }
 }

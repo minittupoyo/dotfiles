@@ -21,6 +21,7 @@ PanelFrame {
     property int brightnessPreview: -1
     readonly property string cliDir: Quickshell.env("MATERIAL_SHELL_CLI_DIR") || ((Quickshell.env("HOME") || "") + "/.local/bin")
     signal panelRequested(string name)
+    signal messageRequested(string text, bool failed)
 
     PwObjectTracker { objects: panel.visible ? panel.devices : [] }
     readonly property var tabs: [
@@ -55,7 +56,16 @@ PanelFrame {
     }
     Connections {
         target: Settings
-        function onSavingChanged() { if (!Settings.saving && !Settings.error) panel.message = "設定を保存しました"; }
+        function onSavingChanged() {
+            if (!Settings.saving) {
+                if (Settings.error) {
+                    panel.messageRequested(Settings.error, true);
+                } else {
+                    panel.message = "設定を保存しました";
+                    panel.messageRequested(panel.message, false);
+                }
+            }
+        }
     }
 
     Process {
@@ -63,7 +73,10 @@ PanelFrame {
         stdout: SplitParser {}
         stderr: SplitParser { onRead: data => panel.error = data.trim() }
         onExited: (code, status) => {
-            if (code !== 0) panel.error = panel.error || "明るさを変更できませんでした";
+            if (code !== 0) {
+                panel.error = panel.error || "明るさを変更できませんでした";
+                panel.messageRequested(panel.error, true);
+            }
             brightnessPreviewReset.restart();
         }
     }
@@ -168,6 +181,7 @@ PanelFrame {
                     Layout.fillHeight: panel.tab === "network"
                     visible: panel.tab === "network"
                     active: panel.visible && panel.tab === "network"
+                    onMessageRequested: (text, failed) => panel.messageRequested(text, failed)
                 }
 
                 PanelSection {
@@ -311,7 +325,18 @@ PanelFrame {
                         }
                         PanelEmptyState { objectName: "notificationEmptyState"; anchors.fill: parent; visible: notificationList.count === 0; icon: "notifications"; title: "通知はありません"; description: "受け取った通知はここに表示されます。" }
                     }
-                    ShellButton { Layout.alignment: Qt.AlignRight; text: "履歴を消去"; flat: true; destructive: true; enabled: (panel.notificationService?.history.length ?? 0) > 0; onClicked: panel.notificationService?.clearHistory() }
+                    ShellButton {
+                        objectName: "clearNotificationsButton"
+                        Layout.alignment: Qt.AlignRight
+                        text: "履歴を消去"
+                        flat: true
+                        destructive: true
+                        enabled: (panel.notificationService?.history.length ?? 0) > 0
+                        onClicked: {
+                            panel.notificationService?.clearHistory();
+                            panel.messageRequested("通知履歴を消去しました", false);
+                        }
+                    }
                 }
 
                 ControlSettings {
@@ -335,8 +360,10 @@ PanelFrame {
                             dnd: false, osd: true, autoLockMinutes: 0, screenOffMinutes: 0
                         };
                         panel.message = "初期値を読み込みました（未保存）";
+                        panel.messageRequested(panel.message, false);
                     }
                     onSaveRequested: targetDraft => Settings.save(targetDraft)
+                    onMessageRequested: (text, failed) => panel.messageRequested(text, failed)
                 }
 
 
@@ -346,6 +373,7 @@ PanelFrame {
                     Layout.minimumHeight: Theme.listRowHeight * 3
                     visible: panel.tab === "clipboard"
                     active: panel.visible && panel.tab === "clipboard"
+                    onMessageRequested: (text, failed) => panel.messageRequested(text, failed)
                 }
                 ControlCapture {
                     Layout.fillWidth: true
@@ -361,7 +389,6 @@ PanelFrame {
                 }
             }
         }
-        Text { Layout.fillWidth: true; visible: panel.error !== ""; text: panel.error; color: Theme.error; wrapMode: Text.Wrap; font.family: Theme.fontFamily; font.pixelSize: Theme.labelSize }
         RowLayout {
             Layout.fillWidth: true
             visible: panel.tab === "quick"

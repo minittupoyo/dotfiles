@@ -10,6 +10,7 @@ PanelFrame {
     property int selectedIndex: 0
     property string error: ""
     property string operation: "list"
+    signal messageRequested(string text, bool failed)
     readonly property string cliDir: Quickshell.env("MATERIAL_SHELL_CLI_DIR") || ((Quickshell.env("HOME") || "") + "/.local/bin")
     readonly property var results: entries.filter(entry => entry.preview.normalize("NFKC").toLocaleLowerCase().includes(search.text.normalize("NFKC").toLocaleLowerCase()))
     onResultsChanged: selectedIndex = 0
@@ -21,9 +22,18 @@ PanelFrame {
         stdout: SplitParser { onRead: data => { if (panel.operation === "list") { try { panel.entries = JSON.parse(data); } catch (error) { panel.error = "履歴を読み込めません"; } } } }
         stderr: SplitParser { onRead: data => panel.error = data }
         onExited: (code, status) => {
-            if (code !== 0) { panel.error = panel.error || "操作に失敗しました"; return; }
-            if (panel.operation === "copy") panel.dismissed();
-            else if (panel.operation === "delete") Qt.callLater(panel.refresh);
+            if (code !== 0) {
+                panel.error = panel.error || "操作に失敗しました";
+                panel.messageRequested(panel.error, true);
+                return;
+            }
+            if (panel.operation === "copy") {
+                panel.messageRequested("クリップボードにコピーしました", false);
+                panel.dismissed();
+            } else if (panel.operation === "delete") {
+                panel.messageRequested("履歴から削除しました", false);
+                Qt.callLater(panel.refresh);
+            }
         }
     }
     ColumnLayout {
@@ -76,7 +86,6 @@ PanelFrame {
             }
             PanelEmptyState { anchors.fill: parent; visible: panel.results.length === 0; icon: "content_paste"; title: search.text ? "一致する履歴がありません" : "履歴はまだありません"; description: search.text ? "別のキーワードで検索してください。" : "コピーしたテキストや画像がここに表示されます。" }
         }
-        Text { Layout.fillWidth: true; visible: panel.error !== ""; text: panel.error; wrapMode: Text.Wrap; color: Theme.error; font.family: Theme.fontFamily; font.pixelSize: Theme.bodySize }
         RowLayout {
             Layout.fillWidth: true
             Text { Layout.fillWidth: true; text: "↑ ↓ 選択 · Enter コピー · Esc 閉じる"; color: Theme.surfaceVariantText; font.family: Theme.fontFamily; font.pixelSize: Theme.labelSize }

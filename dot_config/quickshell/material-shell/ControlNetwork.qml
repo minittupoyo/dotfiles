@@ -9,6 +9,7 @@ Item {
     property string error: ""
     property string message: ""
     property string operation: ""
+    signal messageRequested(string text, bool failed)
     property string selectedWifiSsid: ""
     property string pendingWifiSsid: ""
     property string pendingSecret: ""
@@ -60,6 +61,7 @@ Item {
             if (code !== 0) {
                 if (!page.error) page.error = "操作に失敗しました。設定を確認してもう一度お試しください。";
                 if (completed === "wifi-connect") page.selectedWifiSsid = page.pendingWifiSsid;
+                page.messageRequested(page.error, true);
                 return;
             }
             if (completed === "scan-wifi") page.message = "Wi-Fiネットワークを更新しました";
@@ -70,6 +72,7 @@ Item {
             else if (completed === "bluetooth-pair") page.message = "Bluetooth機器をペア設定しました";
             else if (completed === "bluetooth-disconnect") page.message = "Bluetooth機器を切断しました";
             else if (completed === "bluetooth-remove") page.message = "ペア設定を解除しました";
+            if (page.message !== "") page.messageRequested(page.message, false);
             if (completed !== "status") settleRefresh.restart();
         }
     }
@@ -295,15 +298,6 @@ Item {
                     color: Theme.surfaceVariantText; font.family: Theme.fontFamily; font.pixelSize: Theme.bodySize; wrapMode: Text.Wrap
                 }
             }
-        }
-        Text {
-            Layout.fillWidth: true
-            visible: page.error !== "" || page.message !== ""
-            text: page.error || page.message
-            color: page.error ? Theme.error : Theme.surfaceVariantText
-            font.family: Theme.fontFamily
-            font.pixelSize: Theme.labelSize
-            wrapMode: Text.Wrap
         }
         Item { Layout.fillHeight: true }
     }

@@ -12,6 +12,7 @@ ColumnLayout {
     signal changeRequested(string key, var value)
     signal resetRequested()
     signal saveRequested(var draft)
+    signal messageRequested(string text, bool failed)
 
     spacing: Theme.space16
 
@@ -343,24 +344,14 @@ ColumnLayout {
         }
     }
 
-    // --- メッセージ & 操作フッター ---
-    Text {
-        Layout.fillWidth: true
-        visible: settingsRoot.showFooter && text !== ""
-        text: Settings.error !== "" ? Settings.error : settingsRoot.message
-        color: Settings.error !== "" ? Theme.error : Theme.primary
-        wrapMode: Text.Wrap
-        font.family: Theme.fontFamily
-        font.pixelSize: Theme.bodySize
-        font.weight: Font.Medium
-    }
-
+    // --- 操作フッター ---
     RowLayout {
         Layout.fillWidth: true
         visible: settingsRoot.showFooter
         spacing: Theme.space8
 
         ShellButton {
+            objectName: "controlSettingsReset"
             text: "初期値"
             flat: true
             enabled: !Settings.saving
@@ -370,11 +361,13 @@ ColumnLayout {
         Item { Layout.fillWidth: true }
 
         ShellButton {
+            objectName: "controlSettingsRevert"
             text: "戻す"
             enabled: !Settings.saving
             onClicked: {
                 settingsRoot.draft = Object.assign({}, Settings.values);
                 settingsRoot.message = "";
+                settingsRoot.messageRequested("変更を元に戻しました", false);
             }
         }
 
