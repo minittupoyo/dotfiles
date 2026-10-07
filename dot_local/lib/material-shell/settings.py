@@ -41,6 +41,11 @@ def save(data):
         hyprland_theme.apply(mode=data.get('themeMode'))
     except Exception:
         pass
+    try:
+        import palette
+        palette.apply_matugen(mode=data.get('themeMode'))
+    except Exception:
+        pass
     return data
 
 

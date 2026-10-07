@@ -1,0 +1,7 @@
+[config]
+reload_apps = true
+
+[templates.kitty]
+input_path = "~/.config/matugen/templates/kitty-colors.conf"
+output_path = "~/.config/kitty/colors.conf"
+post_hook = "kitty @ set-colors --all ~/.config/kitty/colors.conf 2>/dev/null || pkill -SIGUSR1 kitty 2>/dev/null || true"

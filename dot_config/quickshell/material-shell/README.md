@@ -89,7 +89,7 @@ material-palette "/path/to/wallpaper.jpg"
 バー・ランチャー・構造アイコン・入力欄・ツールチップへ再起動せずに反映します。
 設定タブでライト/ダークを選ぶと全画面に即時反映し、選択を保存します。生成失敗や不正なJSONでは直前の配色を保持し、初回未生成時はTheme.qmlの固定色を使用。
 パレット更新時およびテーマモード切替時には、Hyprlandのウィンドウボーダー色（active_border: primaryとprimary_containerのグラデーション、inactive_border: outline）も即時同期され、~/.config/hypr/theme.luaへ永続化されます。
-Matugenは--dry-runで呼び出し、他アプリの設定やフックを実行しません。
+Matugen設定ファイル（~/.config/matugen/config.toml）が存在する場合、壁紙更新時および設定でのライト/ダーク切り替え時にMatugenテンプレート（例: Kitty設定）が自動実行されます。専用スクリプトを作成することなく、Matugen標準のテンプレートとpost_hookによってKitty等の外部アプリへ配色が即時反映されます。
 
 ```sh
 quickshell ipc -c material-shell call theme status

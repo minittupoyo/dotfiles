@@ -29,14 +29,17 @@ class HotkeyTests(unittest.TestCase):
 
 class SettingsTests(unittest.TestCase):
     def test_settings_roundtrip_and_failed_save_retains_file(self):
-        with tempfile.TemporaryDirectory() as tmp, patch.object(settings,'CONFIG',Path(tmp)/'settings.json'):
-            data=dict(settings.DEFAULTS,workspaces=7,showCpu=False)
+        with tempfile.TemporaryDirectory() as tmp, \
+             patch.object(settings, 'CONFIG', Path(tmp) / 'settings.json'), \
+             patch('hyprland_theme.apply'), \
+             patch('palette.apply_matugen'):
+            data = dict(settings.DEFAULTS, workspaces=7, showCpu=False)
             settings.save(data)
-            self.assertEqual(settings.read(),data)
-            original=settings.CONFIG.read_bytes()
-            for invalid in [dict(data,workspaces=0),dict(data,showCpu=1),dict(data,autoLockMinutes=20,screenOffMinutes=10),dict(data,themeMode='sepia'),dict(data,unknown=True)]:
-                with self.assertRaises(ValueError):settings.save(invalid)
-                self.assertEqual(settings.CONFIG.read_bytes(),original)
+            self.assertEqual(settings.read(), data)
+            original = settings.CONFIG.read_bytes()
+            for invalid in [dict(data, workspaces=0), dict(data, showCpu=1), dict(data, autoLockMinutes=20, screenOffMinutes=10), dict(data, themeMode='sepia'), dict(data, unknown=True)]:
+                with self.assertRaises(ValueError): settings.save(invalid)
+                self.assertEqual(settings.CONFIG.read_bytes(), original)
 
     def test_idle_settings_produce_timeouts(self):
         args=services.idle_command(dict(settings.DEFAULTS,autoLockMinutes=5,screenOffMinutes=10))

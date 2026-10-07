@@ -127,13 +127,15 @@ class HyprlandThemeTests(unittest.TestCase):
             success = hyprland_theme.apply_runtime(colors)
             self.assertFalse(success)
 
-    def test_settings_save_triggers_hyprland_theme(self):
+    def test_settings_save_triggers_hyprland_theme_and_matugen(self):
         with tempfile.TemporaryDirectory() as tmp, \
              patch.object(settings, "CONFIG", Path(tmp) / "settings.json"), \
-             patch.object(hyprland_theme, "apply") as mock_apply:
+             patch.object(hyprland_theme, "apply") as mock_hypr_apply, \
+             patch.object(palette, "apply_matugen") as mock_matugen_apply:
             data = dict(settings.DEFAULTS, themeMode="light")
             settings.save(data)
-            mock_apply.assert_called_once_with(mode="light")
+            mock_hypr_apply.assert_called_once_with(mode="light")
+            mock_matugen_apply.assert_called_once_with(mode="light")
 
 
 if __name__ == "__main__":

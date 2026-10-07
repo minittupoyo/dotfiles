@@ -84,7 +84,49 @@ def update(path=None, set_wallpaper=False):
             hyprland_theme.apply(palette=palette)
         except Exception:
             pass
+        try:
+            import settings
+            current_mode = settings.read().get('themeMode', 'dark')
+        except Exception:
+            current_mode = 'dark'
+        apply_matugen(path=path, mode=current_mode)
         print(f'Palette updated: {path}', flush=True)
+
+
+def apply_matugen(path=None, mode=None):
+    """Execute Matugen without --dry-run so user templates (e.g. config.toml) are generated."""
+    binary = shutil.which('matugen') or str(Path.home() / '.local/bin/matugen')
+    if not (shutil.which('matugen') or Path(binary).is_file()):
+        return False
+    try:
+        path = Path(path).expanduser().resolve(strict=True) if path else current_wallpaper()
+    except (OSError, ValueError):
+        return False
+    if not path.is_file():
+        return False
+
+    if mode not in ('light', 'dark'):
+        try:
+            import settings
+            mode = settings.read().get('themeMode', 'dark')
+        except Exception:
+            mode = 'dark'
+
+    cmd = [binary, 'image', str(path), '--mode', mode, '--type', 'scheme-tonal-spot',
+           '--contrast', '0', '--source-color-index', '0']
+
+    config_path = Path(os.environ.get('XDG_CONFIG_HOME', str(Path.home() / '.config'))) / 'matugen/config.toml'
+    if config_path.is_file():
+        cmd.extend(['--config', str(config_path)])
+
+    try:
+        res = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+        if res.returncode != 0 and res.stderr:
+            print(f'Matugen template generation warning: {res.stderr.strip()}', file=sys.stderr, flush=True)
+        return res.returncode == 0
+    except Exception as e:
+        print(f'Matugen template execution failed: {e}', file=sys.stderr, flush=True)
+        return False
 
 
 def main():
