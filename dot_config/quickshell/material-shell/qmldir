@@ -10,6 +10,10 @@ ShellButton 1.0 components/ShellButton.qml
 WallpaperSelector 1.0 WallpaperSelector.qml
 singleton Settings 1.0 Settings.qml
 PanelHeader 1.0 components/PanelHeader.qml
+PanelSection 1.0 components/PanelSection.qml
+PanelEmptyState 1.0 components/PanelEmptyState.qml
+RoundedArtwork 1.0 components/RoundedArtwork.qml
+PanelScrollIndicator 1.0 components/PanelScrollIndicator.qml
 Toggle 1.0 components/Toggle.qml
 SettingsPanel 1.0 SettingsPanel.qml
 SessionMenu 1.0 SessionMenu.qml
@@ -18,6 +22,7 @@ NotificationService 1.0 NotificationService.qml
 NotificationCard 1.0 components/NotificationCard.qml
 NotificationCenter 1.0 NotificationCenter.qml
 TrayMenu 1.0 TrayMenu.qml
+TrayOverflow 1.0 TrayOverflow.qml
 Osd 1.0 Osd.qml
 CapturePanel 1.0 CapturePanel.qml
 VolumeSlider 1.0 components/VolumeSlider.qml
@@ -33,3 +38,4 @@ MediaService 1.0 MediaService.qml
 NowPlaying 1.0 NowPlaying.qml
 ExpressiveProgress 1.0 components/ExpressiveProgress.qml
 SessionAction 1.0 components/SessionAction.qml
+ControlSettings 1.0 ControlSettings.qml

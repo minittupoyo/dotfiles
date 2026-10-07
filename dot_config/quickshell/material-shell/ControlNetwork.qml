@@ -85,7 +85,7 @@ Item {
             Layout.fillWidth: true
             Layout.preferredHeight: Theme.inputHeight
             spacing: Theme.space8
-            MaterialIcon { name: "wifi"; size: Theme.quickSettingIconSize; color: Theme.primary }
+            Rectangle { width: Theme.panelHeadingIconSize; height: width; radius: Theme.shapeMedium; color: Theme.secondaryContainer; MaterialIcon { anchors.centerIn: parent; name: "wifi"; color: Theme.secondaryContainerText } }
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 0
@@ -96,7 +96,7 @@ Item {
                     color: Theme.surfaceVariantText; font.family: Theme.fontFamily; font.pixelSize: Theme.labelSize; elide: Text.ElideRight
                 }
             }
-            ShellButton { objectName: "wifiScan"; text: worker.running && page.operation === "scan-wifi" ? "検索中" : "更新"; icon: "search"; enabled: page.state.wifiAvailable && page.state.wifi && !worker.running; Accessible.name: "Wi-Fiネットワークを検索"; onClicked: page.scanWifi() }
+            ShellButton { objectName: "wifiScan"; flat: true; text: worker.running && page.operation === "scan-wifi" ? "検索中" : "更新"; icon: "search"; enabled: page.state.wifiAvailable && page.state.wifi && !worker.running; Accessible.name: "Wi-Fiネットワークを検索"; onClicked: page.scanWifi() }
             Toggle { objectName: "wifiToggle"; checked: page.state.wifi === true; enabled: page.state.wifiAvailable && !worker.running; Accessible.name: "Wi-Fi"; onToggled: page.toggleRadio("wifi") }
         }
 
@@ -117,7 +117,7 @@ Item {
                 required property var modelData
                 width: wifiList.width
                 height: Theme.listRowHeight
-                radius: Theme.shapeSmall
+                radius: Theme.shapeMedium
                 color: modelData.connected ? Theme.secondaryContainer : Theme.surfaceContainerHigh
                 RowLayout {
                     anchors.fill: parent
@@ -148,7 +148,7 @@ Item {
             Layout.fillWidth: true
             Layout.preferredHeight: Theme.listRowHeight
             visible: !page.state.wifiAvailable || !page.state.wifi
-            radius: Theme.shapeSmall
+            radius: Theme.shapeMedium
             color: Theme.surfaceContainerHigh
             RowLayout {
                 anchors.fill: parent; anchors.margins: Theme.space12; spacing: Theme.space8
@@ -164,7 +164,7 @@ Item {
             Layout.fillWidth: true
             Layout.preferredHeight: Theme.listRowHeight
             visible: page.state.wifiAvailable && page.state.wifi && wifiList.count === 0 && !worker.running
-            radius: Theme.shapeSmall
+            radius: Theme.shapeMedium
             color: Theme.surfaceContainerHigh
             RowLayout {
                 anchors.fill: parent; anchors.margins: Theme.space12; spacing: Theme.space8
@@ -216,7 +216,7 @@ Item {
             Layout.fillWidth: true
             Layout.preferredHeight: Theme.inputHeight
             spacing: Theme.space8
-            MaterialIcon { name: "bluetooth"; size: Theme.quickSettingIconSize; color: Theme.primary }
+            Rectangle { width: Theme.panelHeadingIconSize; height: width; radius: Theme.shapeMedium; color: Theme.secondaryContainer; MaterialIcon { anchors.centerIn: parent; name: "bluetooth"; color: Theme.secondaryContainerText } }
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 0
@@ -227,7 +227,7 @@ Item {
                     color: Theme.surfaceVariantText; font.family: Theme.fontFamily; font.pixelSize: Theme.labelSize; elide: Text.ElideRight
                 }
             }
-            ShellButton { objectName: "bluetoothScan"; text: worker.running && page.operation === "scan-bluetooth" ? "検索中" : "検索"; icon: "search"; enabled: page.state.bluetoothAvailable && page.state.bluetooth && !worker.running; Accessible.name: "Bluetooth機器を検索"; onClicked: page.scanBluetooth() }
+            ShellButton { objectName: "bluetoothScan"; flat: true; text: worker.running && page.operation === "scan-bluetooth" ? "検索中" : "検索"; icon: "search"; enabled: page.state.bluetoothAvailable && page.state.bluetooth && !worker.running; Accessible.name: "Bluetooth機器を検索"; onClicked: page.scanBluetooth() }
             Toggle { objectName: "bluetoothToggle"; checked: page.state.bluetooth === true; enabled: page.state.bluetoothAvailable && !worker.running; Accessible.name: "Bluetooth"; onToggled: page.toggleRadio("bluetooth") }
         }
 
@@ -248,7 +248,7 @@ Item {
                 required property var modelData
                 width: bluetoothList.width
                 height: Theme.listRowHeight
-                radius: Theme.shapeSmall
+                radius: Theme.shapeMedium
                 color: modelData.connected ? Theme.secondaryContainer : Theme.surfaceContainerHigh
                 RowLayout {
                     anchors.fill: parent
@@ -270,6 +270,7 @@ Item {
                     }
                     ShellButton {
                         objectName: "bluetoothRemoveButton"
+                        flat: true
                         visible: bluetoothRow.modelData.paired
                         text: "解除"
                         Accessible.name: bluetoothRow.modelData.name + "のペア設定を解除"
@@ -283,7 +284,7 @@ Item {
             Layout.fillWidth: true
             Layout.preferredHeight: Theme.listRowHeight
             visible: !page.state.bluetoothAvailable || !page.state.bluetooth || (bluetoothList.count === 0 && !worker.running)
-            radius: Theme.shapeSmall
+            radius: Theme.shapeMedium
             color: Theme.surfaceContainerHigh
             RowLayout {
                 anchors.fill: parent; anchors.margins: Theme.space12; spacing: Theme.space8
@@ -304,5 +305,6 @@ Item {
             font.pixelSize: Theme.labelSize
             wrapMode: Text.Wrap
         }
+        Item { Layout.fillHeight: true }
     }
 }

@@ -8,7 +8,7 @@ PanelFrame {
     ColumnLayout {
         anchors.fill: parent
         spacing: Theme.space16
-        PanelHeader { Layout.fillWidth: true; title: "通知"; onDismissed: panel.dismissed() }
+        PanelHeader { Layout.fillWidth: true; title: "通知"; icon: "notifications"; subtitle: "受け取った通知を確認"; onDismissed: panel.dismissed() }
         RowLayout {
             Layout.fillWidth: true
             Text { Layout.fillWidth: true; text: "通知を一時停止"; color: Theme.surfaceText; font.family: Theme.fontFamily; font.pixelSize: Theme.bodySize }
@@ -16,6 +16,7 @@ PanelFrame {
         }
         ListView {
             id: list
+                PanelScrollIndicator { parent: list; view: list }
             Layout.fillWidth: true
             Layout.fillHeight: true
             model: panel.service?.history ?? []
@@ -26,10 +27,10 @@ PanelFrame {
                 id: row
                 required property var modelData
                 readonly property var activeNotification: panel.service?.activeNotification(modelData) ?? null
-                width: list.width
+                width: list.width - (list.contentHeight > list.height ? Theme.space8 : 0)
                 height: content.implicitHeight + Theme.space16 * 2
                 radius: Theme.shapeMedium
-                color: Theme.inputBackground
+                color: Theme.surfaceContainerHigh
                 ColumnLayout {
                     id: content
                     anchors.left: parent.left; anchors.right: parent.right; anchors.top: parent.top
@@ -53,8 +54,8 @@ PanelFrame {
                     }
                 }
             }
-            Text { anchors.centerIn: parent; visible: list.count === 0; text: "通知はありません"; color: Theme.surfaceVariantText; font.family: Theme.fontFamily; font.pixelSize: Theme.bodySize }
+            PanelEmptyState { anchors.fill: parent; visible: list.count === 0; icon: "notifications"; title: "通知はありません"; description: "受け取った通知はここに表示されます。" }
         }
-        RowLayout { Layout.fillWidth: true; Item { Layout.fillWidth: true } ShellButton { text: "履歴を消去"; destructive: true; enabled: (panel.service?.history.length ?? 0) > 0; onClicked: panel.service.clearHistory() } }
+        RowLayout { Layout.fillWidth: true; Item { Layout.fillWidth: true } ShellButton { text: "履歴を消去"; flat: true; destructive: true; enabled: (panel.service?.history.length ?? 0) > 0; onClicked: panel.service.clearHistory() } }
     }
 }

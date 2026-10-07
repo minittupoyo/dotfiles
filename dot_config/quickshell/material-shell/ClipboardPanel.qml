@@ -29,10 +29,11 @@ PanelFrame {
     ColumnLayout {
         anchors.fill: parent
         spacing: Theme.space16
-        PanelHeader { Layout.fillWidth: true; title: "クリップボード"; onDismissed: panel.dismissed() }
+        PanelHeader { Layout.fillWidth: true; title: "クリップボード"; icon: "content_paste"; subtitle: "コピーしたテキストと画像"; onDismissed: panel.dismissed() }
         SearchField { id: search; Layout.fillWidth: true; placeholder: "履歴を検索"; onNavigate: direction => { panel.selectedIndex = Math.max(0, Math.min(panel.results.length - 1, panel.selectedIndex + direction)); list.positionViewAtIndex(panel.selectedIndex, ListView.Contain); }; onSubmit: panel.operate("copy", panel.results[panel.selectedIndex]?.id) }
         ListView {
             id: list
+            PanelScrollIndicator { parent: list; view: list }
             Layout.fillWidth: true
             Layout.fillHeight: true
             model: panel.results
@@ -43,54 +44,43 @@ PanelFrame {
                 id: row
                 required property var modelData
                 required property int index
-                width: list.width
+                width: list.width - (list.contentHeight > list.height ? Theme.space8 : 0)
                 readonly property bool hasImage: !!row.modelData.image
-                height: hasImage ? 104 : Theme.listRowHeight
-                radius: Theme.shapeSmall
-                color: panel.selectedIndex === index ? Theme.secondaryContainer : "transparent"
+                height: hasImage ? Theme.clipboardImageRowHeight : Theme.listRowHeight
+                radius: Theme.shapeMedium
+                color: panel.selectedIndex === index ? Theme.secondaryContainer : Theme.surfaceContainerHigh
                 RowLayout {
                     anchors.fill: parent
                     anchors.margins: Theme.space8
                     spacing: Theme.space12
-                    Rectangle {
-                        Layout.preferredWidth: row.hasImage ? 88 : 0
-                        Layout.preferredHeight: row.hasImage ? 88 : 0
+                    RoundedArtwork {
+                        Layout.preferredWidth: row.hasImage ? Theme.clipboardPreviewSize : 0
+                        Layout.preferredHeight: row.hasImage ? Theme.clipboardPreviewSize : 0
                         visible: row.hasImage
                         radius: Theme.shapeSmall
-                        color: Theme.surfaceContainerHigh
-                        clip: true
-                        Image {
-                            anchors.fill: parent
-                            source: row.modelData.image || ""
-                            sourceSize.width: 176
-                            sourceSize.height: 176
-                            fillMode: Image.PreserveAspectFit
-                            asynchronous: true
-                            cache: true
-                        }
+                        backgroundColor: panel.selectedIndex === row.index ? Theme.secondaryContainer : Theme.surfaceContainerHigh
+                        source: row.modelData.image || ""
+                        sourceSize.width: Theme.clipboardPreviewSize * 2
+                        sourceSize.height: Theme.clipboardPreviewSize * 2
+                        fillMode: Image.PreserveAspectCrop
+                        fallbackIcon: "content_paste"
                     }
-                    Text {
+                    ColumnLayout {
                         Layout.fillWidth: true
-                        text: row.modelData.preview
-                        textFormat: Text.PlainText
-                        elide: Text.ElideRight
-                        maximumLineCount: row.hasImage ? 3 : 1
-                        wrapMode: row.hasImage ? Text.Wrap : Text.NoWrap
-                        verticalAlignment: Text.AlignVCenter
-                        color: Theme.surfaceText
-                        font.family: Theme.fontFamily
-                        font.pixelSize: Theme.bodySize
+                        spacing: Theme.space4
+                        Text { Layout.fillWidth: true; text: row.hasImage ? "画像" : row.modelData.preview; textFormat: Text.PlainText; elide: Text.ElideRight; color: Theme.surfaceText; font.family: Theme.fontFamily; font.pixelSize: Theme.bodySize; font.weight: row.hasImage ? Font.Medium : Font.Normal }
+                        Text { visible: row.hasImage; Layout.fillWidth: true; text: (row.modelData.preview.match(/\d+x\d+/)?.[0] || "クリップボードの画像") + " · クリックしてコピー"; color: Theme.surfaceVariantText; font.family: Theme.fontFamily; font.pixelSize: Theme.labelSize; elide: Text.ElideRight }
                     }
                 }
                 MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: { panel.selectedIndex = row.index; panel.operate("copy", row.modelData.id); } }
             }
-            Text { anchors.centerIn: parent; visible: panel.results.length === 0; text: "履歴がありません"; color: Theme.surfaceVariantText; font.family: Theme.fontFamily; font.pixelSize: Theme.bodySize }
+            PanelEmptyState { anchors.fill: parent; visible: panel.results.length === 0; icon: "content_paste"; title: search.text ? "一致する履歴がありません" : "履歴はまだありません"; description: search.text ? "別のキーワードで検索してください。" : "コピーしたテキストや画像がここに表示されます。" }
         }
         Text { Layout.fillWidth: true; visible: panel.error !== ""; text: panel.error; wrapMode: Text.Wrap; color: Theme.error; font.family: Theme.fontFamily; font.pixelSize: Theme.bodySize }
         RowLayout {
             Layout.fillWidth: true
             Text { Layout.fillWidth: true; text: "↑ ↓ 選択 · Enter コピー · Esc 閉じる"; color: Theme.surfaceVariantText; font.family: Theme.fontFamily; font.pixelSize: Theme.labelSize }
-            ShellButton { text: "削除"; destructive: true; enabled: panel.results.length > 0 && !worker.running; onClicked: panel.operate("delete", panel.results[panel.selectedIndex]?.id) }
+            ShellButton { text: "削除"; flat: true; destructive: true; enabled: panel.results.length > 0 && !worker.running; onClicked: panel.operate("delete", panel.results[panel.selectedIndex]?.id) }
         }
     }
 }

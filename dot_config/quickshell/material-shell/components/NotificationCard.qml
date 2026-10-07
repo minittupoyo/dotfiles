@@ -15,7 +15,7 @@ Rectangle {
         RowLayout {
             Layout.fillWidth: true
             Text { Layout.fillWidth: true; text: card.notification?.appName ?? ""; textFormat: Text.PlainText; elide: Text.ElideRight; color: Theme.surfaceVariantText; font.family: Theme.fontFamily; font.pixelSize: Theme.labelSize }
-            ShellButton { icon: "close"; Accessible.name: "通知を閉じる"; onClicked: card.notification?.dismiss() }
+            ShellButton { icon: "close"; flat: true; Accessible.name: "通知を閉じる"; onClicked: card.notification?.dismiss() }
         }
         Text { Layout.fillWidth: true; text: card.notification?.summary ?? ""; textFormat: Text.PlainText; wrapMode: Text.Wrap; maximumLineCount: 3; elide: Text.ElideRight; color: Theme.surfaceText; font.family: Theme.fontFamily; font.pixelSize: Theme.bodySize; font.weight: Font.Medium }
         Text { Layout.fillWidth: true; visible: text !== ""; text: card.notification?.body ?? ""; textFormat: Text.PlainText; wrapMode: Text.Wrap; maximumLineCount: 4; elide: Text.ElideRight; color: Theme.surfaceVariantText; font.family: Theme.fontFamily; font.pixelSize: Theme.bodySize }

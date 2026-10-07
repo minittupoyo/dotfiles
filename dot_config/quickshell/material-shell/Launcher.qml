@@ -56,32 +56,7 @@ PanelFrame {
     ColumnLayout {
         anchors.fill: parent
         spacing: Theme.space16
-        RowLayout {
-            Layout.fillWidth: true
-            Text {
-                Layout.fillWidth: true
-                text: "アプリケーション"
-                color: Theme.surfaceText
-                font.family: Theme.fontFamily
-                font.pixelSize: Theme.titleSize
-                font.weight: Font.Medium
-            }
-            Rectangle {
-                implicitWidth: Theme.buttonHeight
-                implicitHeight: Theme.buttonHeight
-                radius: Theme.buttonHeight / 2
-                color: closeArea.pressed ? Theme.pressedState : closeArea.containsMouse ? Theme.hoverState : "transparent"
-                activeFocusOnTab: true
-                border.width: activeFocus ? 1 : 0
-                border.color: Theme.primary
-                Accessible.role: Accessible.Button
-                Accessible.name: "閉じる"
-                MaterialIcon { anchors.centerIn: parent; name: "close" }
-                Keys.onReturnPressed: launcher.dismissed()
-                Keys.onSpacePressed: launcher.dismissed()
-                MouseArea { id: closeArea; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onPressed: parent.focus = false; onClicked: launcher.dismissed() }
-            }
-        }
+        PanelHeader { Layout.fillWidth: true; title: "アプリケーション"; icon: "apps"; subtitle: "アプリ名やキーワードから検索"; onDismissed: launcher.dismissed() }
         SearchField {
             id: search
             Layout.fillWidth: true
@@ -93,6 +68,7 @@ PanelFrame {
             Layout.fillHeight: true
             ListView {
                 id: list
+                PanelScrollIndicator { parent: list; view: list }
                 anchors.fill: parent
                 clip: true
                 model: launcher.results
@@ -103,9 +79,9 @@ PanelFrame {
                     required property var modelData
                     required property int index
                     readonly property bool selected: launcher.selectedIndex === index
-                    width: list.width
+                    width: list.width - (list.contentHeight > list.height ? Theme.space8 : 0)
                     height: Theme.listRowHeight
-                    radius: Theme.shapeSmall
+                    radius: Theme.shapeMedium
                     color: selected ? Theme.secondaryContainer : "transparent"
                     Accessible.role: Accessible.ListItem
                     Accessible.name: modelData.name
@@ -167,14 +143,7 @@ PanelFrame {
                     }
                 }
             }
-            Text {
-                anchors.centerIn: parent
-                visible: launcher.results.length === 0
-                text: "一致するアプリがありません"
-                color: Theme.surfaceVariantText
-                font.family: Theme.fontFamily
-                font.pixelSize: Theme.bodySize
-            }
+            PanelEmptyState { anchors.fill: parent; visible: launcher.results.length === 0; icon: "search"; title: "一致するアプリがありません"; description: "別の名前やキーワードで検索してください。" }
         }
         RowLayout {
             Layout.fillWidth: true

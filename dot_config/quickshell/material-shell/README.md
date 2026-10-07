@@ -6,8 +6,10 @@ Hyprland向けQuickshellステータスバー。全モニターの上端に表�
 既存の起動名 `material-shell` は維持しています。
 
 表示: ワークスペース1〜5、アクティブウィンドウ名、`yyyy/MM/dd HH:mm`形式の日時、CPU・メモリ使用率、ネットワーク、音量。バッテリー搭載時は残量も表示します。
+右側は接続・音量・バッテリー・リソース、システムトレイ、通知などの日常操作、設定・セッションの順にグループ化しています。
 
 操作:
+- バーの背景を右クリック: クイックコントロールパネル
 - 左端・Super+Space: 独自ランチャー（検索・上下キー・Enter・Esc）
 - ワークスペース: クリックで切り替え
 - 音量: クリックでコントロールパネルの音声タブ、スクロールで5%ずつ変更
@@ -86,10 +88,12 @@ material-palette "/path/to/wallpaper.jpg"
 パレットは${XDG_STATE_HOME:-~/.local/state}/material-shell/palette.jsonに保存し、
 バー・ランチャー・構造アイコン・入力欄・ツールチップへ再起動せずに反映します。
 設定タブでライト/ダークを選ぶと全画面に即時反映し、選択を保存します。生成失敗や不正なJSONでは直前の配色を保持し、初回未生成時はTheme.qmlの固定色を使用。
+パレット更新時およびテーマモード切替時には、Hyprlandのウィンドウボーダー色（active_border: primaryとprimary_containerのグラデーション、inactive_border: outline）も即時同期され、~/.config/hypr/theme.luaへ永続化されます。
 Matugenは--dry-runで呼び出し、他アプリの設定やフックを実行しません。
 
 ```sh
 quickshell ipc -c material-shell call theme status
+material-hyprland-theme
 ```
 
 公式: https://github.com/InioX/matugen/releases/tag/v4.2.0
@@ -97,13 +101,13 @@ quickshell ipc -c material-shell call theme status
 ## 独自壁紙セレクター
 
 バーの壁紙アイコンまたはSuper + Shift + Wで開きます。
-フォルダーのパスを入力して「読み込む」、名前・パスで検索し、画像をクリックしてプレビュー。
+フォルダーのパスを入力して「フォルダーを読み込む」か、「参照」からパネル内のフォルダーピッカーで選択します。名前・パスで検索し、画像をクリックしてプレビュー。
 「壁紙と配色を適用」または検索欄でEnterを押すと全画面の壁紙とMatugen配色を更新します。
 ↑↓で選択、Escまたは外側クリックで閉じます。選択のみでは壁紙を変更しません。
 初期フォルダーは~/Pictures/Wallpapers、~/Wallpapers、/usr/share/backgrounds。
 現在の壁紙は検索フォルダー外でも一覧に含めます。PNG/JPEG/WebP/BMPが対象です。
 成功したフォルダー指定を~/.config/material-shell/wallpapers.jsonへ保存し、次回復元します
-（XDG_CONFIG_HOMEに対応）。一覧は開く時・再読み込み時に更新します。
+（XDG_CONFIG_HOMEに対応）。一覧はパネルを開いた時とフォルダー読み込み時に更新します。適用結果はOSDに表示します。
 壁紙はawwwで描画し、セレクター・保存・復元・配色は独自実装です。
 
 ```sh
@@ -146,7 +150,7 @@ python3 ~/.config/quickshell/material-shell/tests/test_wallpaper_backend.py
 | Super+L | 独立ロック画面 |
 | Print / Shift+Print | 全ディスプレイ / 範囲キャプチャ |
 
-各パネルはEsc・外側クリックで閉じます。トレイは左クリックで起動、右クリックで独自メニュー。
+各パネルはEsc・外側クリックで閉じます。トレイは左クリックで起動、右クリックで独自メニュー。項目が3つ以上の場合は2つをバーに表示し、残りを「apps +N」メニューへまとめます。
 機能アイコンはコントロールパネルを開き、対応するタブを選択します。バーの調整アイコンはクイックタブを開きます。
 タブはアイコンとラベルを表示し、横スクロールできます。壁紙セレクター、ランチャー、セッション、トレイはそれぞれ専用UIです。
 
@@ -170,7 +174,7 @@ python3 ~/.config/quickshell/material-shell/tests/test_wallpaper_backend.py
 Printキーとコントロールパネルの撮影タブから現在のディスプレイ・全ディスプレイ・範囲を撮影できます。範囲は独立プログラム `~/.local/bin/material-screenshot` がslurpを直接起動し、ドラッグして離すと撮影、Escでキャンセルします。撮影後はoxipngでロスレス最適化し、ファイルサイズが小さくなった場合だけ採用します。最適化後のPNGを `~/Pictures/Screenshots`へ保存してクリップボードにもコピーします。
 音量・ミュート・明るさの変更でOSDを表示します（明るさはバックライト搭載時）。
 コントロールパネルにクイック・接続・音声・メディア・通知・設定・クリップボード・撮影のタブをまとめています。明るさ調整と壁紙/配色の入口はクイックにあります。バーの壁紙アイコンは専用セレクターを直接開きます。ランチャー・セッション・トレイ・壁紙セレクターは専用UIを使います。
-曲が変わるとアルバムアート、曲名、アーティストを含むメディアOSDを4秒間表示します。
+曲変更後にmetadataが安定し、再生中で曲名とアーティストが揃った場合だけ、アルバムアート・曲名・アーティストを含むメディアOSDを4秒間表示します。metadataの反映待ちは500msです。
 
 設定: `~/.config/material-shell/settings.json`。表示項目、ワークスペース数、
 DND、OSD、自動ロック・消灯時間を変更できます。初期状態は自動ロック・消灯とも無効です。
@@ -266,3 +270,5 @@ PipeWire・Hyprland状態の購読を担当します。
 
 `start.sh`はユーザーsystemdサービスとして統計、壁紙パレット監視、クリップボード/アイドル監視を起動します。
 状態はJSON CLI出力または`$XDG_RUNTIME_DIR/material-shell/stats.json`を介してUIへ渡します。
+
+パネルの見た目はDESIGN_SYSTEM.mdとTheme.qmlに定義。見出し・トーナルセクション・空状態・角丸画像・スクロール表示を共通部品で揃えています。コントロールパネルは640px幅のnavigation rail構成です。

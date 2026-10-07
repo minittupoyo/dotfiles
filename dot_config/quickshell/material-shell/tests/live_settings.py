@@ -15,7 +15,7 @@ ShellRoot {
  Process {id:worker;stdout:SplitParser{onRead:data=>Settings.values=JSON.parse(data)} onExited:(code,status)=>Settings.saving=false}
  SettingsPanel {
   id:panel
-  property bool opened:true
+  opened:true
   visible:opened
   screen:Quickshell.screens[Number(Quickshell.env("PANEL_TEST_SCREEN")||"0")]
   onDismissed:opened=false

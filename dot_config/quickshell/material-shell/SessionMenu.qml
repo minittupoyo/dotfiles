@@ -39,7 +39,7 @@ PanelFrame {
     ColumnLayout {
         anchors.fill: parent
         spacing: Theme.space16
-        PanelHeader { id: header; Layout.fillWidth: true; title: "セッション"; onDismissed: panel.dismissed() }
+        PanelHeader { id: header; Layout.fillWidth: true; title: "セッション"; icon: "power_settings_new"; subtitle: "ロック・電源・セッション操作"; onDismissed: panel.dismissed() }
         Text { visible: panel.pendingAction !== ""; Layout.fillWidth: true; text: panel.pendingLabel + "しますか？"; color: Theme.surfaceText; font.family: Theme.fontFamily; font.pixelSize: Theme.titleSize; wrapMode: Text.Wrap }
         Text { visible: panel.pendingAction !== ""; Layout.fillWidth: true; text: panel.pendingAction === "suspend" ? "画面をロックしてからサスペンドします。" : "未保存の作業を確認してから実行してください。"; color: Theme.surfaceVariantText; font.family: Theme.fontFamily; font.pixelSize: Theme.bodySize; wrapMode: Text.Wrap }
         GridLayout {
@@ -55,6 +55,7 @@ PanelFrame {
                     required property var modelData
                     Layout.fillWidth: true
                     label: modelData.label
+                    destructive: ["logout", "reboot", "poweroff"].includes(modelData.id)
                     icon: modelData.icon
                     enabled: !panel.executing
                     onClicked: panel.choose(modelData.id)

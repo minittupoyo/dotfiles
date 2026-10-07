@@ -12,7 +12,7 @@ PanelFrame {
     ColumnLayout {
         anchors.fill: parent
         spacing: Theme.space16
-        PanelHeader { Layout.fillWidth: true; title: "オーディオ"; onDismissed: panel.dismissed() }
+        PanelHeader { Layout.fillWidth: true; title: "オーディオ"; icon: "volume_up"; subtitle: "音声デバイスと音量を調整"; onDismissed: panel.dismissed() }
         Flickable {
             Layout.fillWidth: true; Layout.fillHeight: true
             clip: true; contentHeight: sections.implicitHeight
@@ -23,13 +23,14 @@ PanelFrame {
                 spacing: Theme.space24
                 Repeater {
                     model: [true, false]
-                    delegate: ColumnLayout {
+                    delegate: PanelSection {
                         id: section
+                        title: modelData ? "出力" : "マイク入力"
+                        icon: modelData ? "volume_up" : "volume_mute"
                         required property bool modelData
                         readonly property var node: modelData ? panel.output : panel.input
                         Layout.fillWidth: true
                         spacing: Theme.space8
-                        Text { text: section.modelData ? "出力" : "マイク入力"; color: Theme.surfaceText; font.family: Theme.fontFamily; font.pixelSize: Theme.inputSize; font.weight: Font.Medium }
                         Text { Layout.fillWidth: true; text: section.node ? (section.node.description || section.node.name) : "利用できるデバイスがありません"; textFormat: Text.PlainText; wrapMode: Text.WrapAnywhere; color: Theme.surfaceVariantText; font.family: Theme.fontFamily; font.pixelSize: Theme.bodySize }
                         RowLayout {
                             Layout.fillWidth: true

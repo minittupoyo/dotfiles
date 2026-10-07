@@ -34,6 +34,8 @@ PanelFrame {
         {name:"capture",label:"撮影",icon:"screenshot_monitor"}
     ]
     readonly property string tabTitle: tabs.find(item => item.name === tab)?.label ?? "コントロール"
+    readonly property string tabIcon: tabs.find(item => item.name === tab)?.icon ?? "apps"
+    readonly property string tabDescription: ({quick:"よく使う操作をまとめて", network:"Wi-FiとBluetoothの接続を管理", audio:"出力・マイクとデバイスを調整", media:"再生中のメディアを操作", notifications:"受け取った通知を確認", settings:"シェルの表示と動作をカスタマイズ", clipboard:"コピーしたテキストと画像", capture:"画面を撮影して保存・コピー"})[tab] || ""
     readonly property var devices: Pipewire.nodes.values.filter(node => node.audio && !node.isStream)
     readonly property var output: Pipewire.defaultAudioSink
     readonly property var input: Pipewire.defaultAudioSource
@@ -79,7 +81,7 @@ PanelFrame {
     ColumnLayout {
         anchors.fill: parent
         spacing: Theme.space12
-        PanelHeader { Layout.fillWidth: true; title: panel.tabTitle; onDismissed: panel.dismissed() }
+        PanelHeader { Layout.fillWidth: true; title: panel.tabTitle; icon: panel.tabIcon; subtitle: panel.tabDescription; onDismissed: panel.dismissed() }
         RowLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -104,6 +106,8 @@ PanelFrame {
             }
             Flickable {
                 id: bodyScroll
+                objectName: "controlBody"
+                PanelScrollIndicator { parent: bodyScroll; view: bodyScroll }
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 contentHeight: body.height
@@ -111,42 +115,49 @@ PanelFrame {
                 boundsBehavior: Flickable.StopAtBounds
                 ColumnLayout {
                     id: body
-                    width: parent.width
+                    objectName: "controlPageLayout"
+                    width: parent.width - (bodyScroll.contentHeight > bodyScroll.height ? Theme.space8 : 0)
                     height: Math.max(implicitHeight, bodyScroll.height)
                     spacing: Theme.space16
                 GridLayout {
+                    objectName: "quickTiles"
                     Layout.fillWidth: true
-                    Layout.fillHeight: panel.tab === "quick"
+                    Layout.fillHeight: false
                     visible: panel.tab === "quick"
                     columns: 2
                     rowSpacing: Theme.space8
                     columnSpacing: Theme.space8
                     ControlTile {
-                        Layout.fillHeight: panel.tab === "quick"
+                        Layout.fillHeight: false
                         visible: panel.tab === "quick"
-                        title: Settings.values.dnd ? "通知を一時停止中" : "通知を受け取る"
+                        title: "通知を一時停止"
+                        subtitle: Settings.values.dnd ? "オン" : "オフ"
                         icon: Settings.values.dnd ? "notifications_off" : "notifications"
                         checked: Settings.values.dnd
+                        checkable: true
                         onToggled: Settings.save(Object.assign({}, Settings.values, {dnd: !Settings.values.dnd}))
                     }
                     ControlTile {
-                        Layout.fillHeight: panel.tab === "quick"
+                        Layout.fillHeight: false
                         visible: panel.tab === "quick"
-                        title: "壁紙と配色を選ぶ"
+                        title: "壁紙と配色"
+                        subtitle: "画像からテーマを生成"
                         icon: "wallpaper"
                         onToggled: panel.panelRequested("wallpaper")
                     }
                     ControlTile {
-                        Layout.fillHeight: panel.tab === "quick"
+                        Layout.fillHeight: false
                         visible: panel.tab === "quick"
-                        title: "ネットワーク接続"
+                        title: "ネットワーク"
+                        subtitle: "Wi-Fi・Bluetooth"
                         icon: "wifi"
                         onToggled: panel.selectTab("network")
                     }
                     ControlTile {
-                        Layout.fillHeight: panel.tab === "quick"
+                        Layout.fillHeight: false
                         visible: panel.tab === "quick"
                         title: "音声デバイス"
+                        subtitle: "出力・マイク入力"
                         icon: "volume_up"
                         onToggled: panel.selectTab("audio")
                     }
@@ -159,10 +170,11 @@ PanelFrame {
                     active: panel.visible && panel.tab === "network"
                 }
 
-                ColumnLayout {
+                PanelSection {
+                    objectName: "quickVolume"
                     Layout.fillWidth: true
                     visible: panel.tab === "quick"
-                    spacing: Theme.space4
+                    spacing: Theme.space8
                     RowLayout {
                         Layout.fillWidth: true
                         MaterialIcon { name: panel.volumeIcon() }
@@ -188,10 +200,10 @@ PanelFrame {
                     }
                 }
 
-                ColumnLayout {
+                PanelSection {
                     Layout.fillWidth: true
                     visible: panel.tab === "quick" && panel.brightness !== null
-                    spacing: Theme.space4
+                    spacing: Theme.space8
                     RowLayout {
                         Layout.fillWidth: true
                         MaterialIcon { name: panel.brightnessIcon() }
@@ -209,16 +221,17 @@ PanelFrame {
                 ColumnLayout {
                     Layout.fillWidth: true
                     visible: panel.tab === "audio"
-                    spacing: Theme.space24
+                    spacing: Theme.space16
                     Repeater {
                         model: [true, false]
-                        delegate: ColumnLayout {
+                        delegate: PanelSection {
                             id: section
+                            title: modelData ? "出力" : "マイク入力"
+                            icon: modelData ? "volume_up" : "volume_mute"
                             required property bool modelData
                             readonly property var node: modelData ? panel.output : panel.input
                             Layout.fillWidth: true
                             spacing: Theme.space8
-                            Text { text: section.modelData ? "出力" : "マイク入力"; color: Theme.surfaceText; font.family: Theme.fontFamily; font.pixelSize: Theme.inputSize; font.weight: Font.Medium }
                             Text { Layout.fillWidth: true; text: section.node ? (section.node.description || section.node.name) : "利用できるデバイスがありません"; textFormat: Text.PlainText; wrapMode: Text.WrapAnywhere; color: Theme.surfaceVariantText; font.family: Theme.fontFamily; font.pixelSize: Theme.bodySize }
                             RowLayout {
                                 Layout.fillWidth: true
@@ -242,7 +255,8 @@ PanelFrame {
 
                 ControlMedia {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 500
+                    Layout.fillHeight: panel.tab === "media"
+                    Layout.minimumHeight: implicitHeight
                     visible: panel.tab === "media"
                     service: panel.playerService
                     active: panel.visible && panel.tab === "media"
@@ -251,6 +265,7 @@ PanelFrame {
                 ColumnLayout {
                     Layout.fillWidth: true
                     visible: panel.tab === "notifications"
+                    Layout.fillHeight: panel.tab === "notifications"
                     spacing: Theme.space8
                     RowLayout {
                         Layout.fillWidth: true
@@ -260,7 +275,8 @@ PanelFrame {
                     ListView {
                         id: notificationList
                         Layout.fillWidth: true
-                        Layout.preferredHeight: 440
+                        Layout.fillHeight: true
+                        Layout.minimumHeight: Theme.emptyStateContainerSize * 2
                         model: panel.notificationService?.history ?? []
                         spacing: Theme.space8
                         clip: true
@@ -276,7 +292,7 @@ PanelFrame {
                             ColumnLayout {
                                 id: notificationContent
                                 anchors.left: parent.left; anchors.right: parent.right; anchors.top: parent.top
-                                anchors.margins: Theme.space12
+                                anchors.margins: Theme.space16
                                 spacing: Theme.space8
                                 RowLayout {
                                     Layout.fillWidth: true
@@ -293,81 +309,55 @@ PanelFrame {
                                 }
                             }
                         }
-                        Text { anchors.centerIn: parent; visible: notificationList.count === 0; text: "通知はありません"; color: Theme.surfaceVariantText; font.family: Theme.fontFamily; font.pixelSize: Theme.bodySize }
+                        PanelEmptyState { objectName: "notificationEmptyState"; anchors.fill: parent; visible: notificationList.count === 0; icon: "notifications"; title: "通知はありません"; description: "受け取った通知はここに表示されます。" }
                     }
-                    ShellButton { Layout.alignment: Qt.AlignRight; text: "履歴を消去"; destructive: true; enabled: (panel.notificationService?.history.length ?? 0) > 0; onClicked: panel.notificationService?.clearHistory() }
+                    ShellButton { Layout.alignment: Qt.AlignRight; text: "履歴を消去"; flat: true; destructive: true; enabled: (panel.notificationService?.history.length ?? 0) > 0; onClicked: panel.notificationService?.clearHistory() }
                 }
 
-                ColumnLayout {
+                ControlSettings {
                     Layout.fillWidth: true
                     visible: panel.tab === "settings"
-                    spacing: Theme.space8
-                    RowLayout {
-                        Layout.fillWidth: true
-                        Text { Layout.fillWidth: true; text: "カラーテーマ"; color: Theme.surfaceText; font.family: Theme.fontFamily; font.pixelSize: Theme.bodySize }
-                        ShellButton {
-                            objectName: "themeModeLight"
-                            text: "ライト"
-                            icon: "brightness_high"
-                            emphasized: panel.draft.themeMode === "light"
-                            enabled: !Settings.saving
-                            onClicked: { const next = Object.assign({}, panel.draft); next.themeMode = "light"; panel.draft = next; Settings.save(Object.assign({}, Settings.values, {themeMode: "light"})); }
-                        }
-                        ShellButton {
-                            objectName: "themeModeDark"
-                            text: "ダーク"
-                            icon: "bedtime"
-                            emphasized: panel.draft.themeMode !== "light"
-                            enabled: !Settings.saving
-                            onClicked: { const next = Object.assign({}, panel.draft); next.themeMode = "dark"; panel.draft = next; Settings.save(Object.assign({}, Settings.values, {themeMode: "dark"})); }
-                        }
+                    draft: panel.draft
+                    message: panel.message
+                    showPanelLinks: false
+                    onChangeRequested: (key, value) => {
+                        const next = Object.assign({}, panel.draft);
+                        next[key] = value;
+                        panel.draft = next;
+                        panel.message = "";
                     }
-                    Repeater {
-                        model: [{key:"showCpu",label:"CPU使用率"},{key:"showMemory",label:"メモリ使用率"},{key:"showNetwork",label:"ネットワーク"},{key:"showWindowTitle",label:"ウィンドウ名"},{key:"showTray",label:"システムトレイ"},{key:"osd",label:"音量・明るさのOSD"},{key:"dnd",label:"通知を一時停止"}]
-                        delegate: RowLayout {
-                            required property var modelData
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: Theme.buttonHeight
-                            Text { Layout.fillWidth: true; text: parent.modelData.label; color: Theme.surfaceText; font.family: Theme.fontFamily; font.pixelSize: Theme.bodySize }
-                            Toggle { checked: panel.draft[parent.modelData.key] ?? false; Accessible.name: parent.modelData.label; enabled: !Settings.saving; onToggled: { const next = Object.assign({}, panel.draft); next[parent.modelData.key] = !checked; panel.draft = next; } }
-                        }
+                    onWallpaperRequested: panel.panelRequested("wallpaper")
+                    onPanelRequested: name => panel.selectTab(name)
+                    onResetRequested: {
+                        panel.draft = {
+                            showCpu: true, showMemory: true, showNetwork: true, showWindowTitle: true,
+                            showTray: true, clock24: true, themeMode: "dark", workspaces: 5,
+                            dnd: false, osd: true, autoLockMinutes: 0, screenOffMinutes: 0
+                        };
+                        panel.message = "初期値を読み込みました（未保存）";
                     }
-                    Repeater {
-                        model: [{key:"workspaces",label:"ワークスペース数",min:1,max:10,step:1},{key:"autoLockMinutes",label:"自動ロック（分）",min:0,max:240,step:5},{key:"screenOffMinutes",label:"自動消灯（分）",min:0,max:240,step:5}]
-                        delegate: RowLayout {
-                            id: numberSetting
-                            required property var modelData
-                            Layout.fillWidth: true
-                            Text { Layout.fillWidth: true; text: numberSetting.modelData.label; color: Theme.surfaceText; font.family: Theme.fontFamily; font.pixelSize: Theme.bodySize }
-                            ShellButton { text: "−"; enabled: !Settings.saving && panel.draft[numberSetting.modelData.key] > numberSetting.modelData.min; onClicked: { const next = Object.assign({}, panel.draft); next[numberSetting.modelData.key] = Math.max(numberSetting.modelData.min, next[numberSetting.modelData.key] - numberSetting.modelData.step); panel.draft = next; } }
-                            Text { text: panel.draft[numberSetting.modelData.key] === 0 ? "無効" : String(panel.draft[numberSetting.modelData.key] ?? ""); color: Theme.surfaceText; font.family: Theme.fontFamily; font.pixelSize: Theme.bodySize }
-                            ShellButton { text: "+"; enabled: !Settings.saving && panel.draft[numberSetting.modelData.key] < numberSetting.modelData.max; onClicked: { const next = Object.assign({}, panel.draft); next[numberSetting.modelData.key] = Math.min(numberSetting.modelData.max, next[numberSetting.modelData.key] + numberSetting.modelData.step); panel.draft = next; } }
-                        }
-                    }
-                    RowLayout {
-                        Layout.fillWidth: true
-                        Item { Layout.fillWidth: true }
-                        ShellButton { text: "戻す"; enabled: !Settings.saving; onClicked: { panel.draft = Object.assign({}, Settings.values); panel.message = ""; } }
-                        ShellButton { text: Settings.saving ? "保存中…" : "保存"; emphasized: true; enabled: !Settings.saving; onClicked: Settings.save(panel.draft) }
-                    }
-                    Text { Layout.fillWidth: true; visible: panel.message !== "" || Settings.error !== ""; text: Settings.error || panel.message; color: Settings.error ? Theme.error : Theme.surfaceVariantText; wrapMode: Text.Wrap; font.family: Theme.fontFamily; font.pixelSize: Theme.labelSize }
+                    onSaveRequested: targetDraft => Settings.save(targetDraft)
                 }
+
 
                 ControlClipboard {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 500
+                    Layout.fillHeight: panel.tab === "clipboard"
+                    Layout.minimumHeight: Theme.listRowHeight * 3
                     visible: panel.tab === "clipboard"
                     active: panel.visible && panel.tab === "clipboard"
                 }
                 ControlCapture {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 360
+                    Layout.fillHeight: panel.tab === "capture"
+                    Layout.minimumHeight: implicitHeight
                     visible: panel.tab === "capture"
                     busy: panel.captureActive
                     message: panel.message
                     onCaptureRequested: mode => panel.panelRequested("capture:" + mode)
                     onCancelRequested: panel.panelRequested("cancel-capture")
                 }
+                Item { visible: panel.tab === "quick"; Layout.fillHeight: true }
                 }
             }
         }

@@ -118,6 +118,17 @@ QtObject {
     readonly property color panelBackground: surfaceContainerHigh
     readonly property color inputBackground: surfaceContainerHighest
     readonly property int panelPadding: space24
+    readonly property int sectionPadding: space16
+    readonly property int sectionRadius: 20
+    readonly property int panelHeadingIconSize: 40
+    readonly property int emptyStateContainerSize: 64
+    readonly property int emptyStateIconSize: 28
+    readonly property int emptyStateContentWidth: 320
+    readonly property int clipboardPreviewSize: 88
+    readonly property int clipboardImageRowHeight: 112
+    readonly property int scrollIndicatorWidth: 3
+    readonly property int scrollIndicatorMinLength: 24
+    readonly property int trayPanelWidth: 360
     readonly property int panelScreenMargin: space24
     readonly property int panelRadius: shapeExtraLarge
     readonly property int inputRadius: 24
@@ -127,8 +138,8 @@ QtObject {
     readonly property int mediaEmptyContainerSize: 80
     readonly property int mediaEmptySymbolSize: 36
     readonly property int mediaEmptyContentWidth: 320
-    readonly property int sessionPanelHeight: 208
-    readonly property int sessionConfirmHeight: 280
+    readonly property int sessionPanelHeight: 240
+    readonly property int sessionConfirmHeight: 320
     readonly property int sessionActionWidth: 88
     readonly property int sessionActionHeight: 96
     readonly property int sessionActionIconSize: 32
@@ -137,7 +148,7 @@ QtObject {
     readonly property int sessionActionSpacing: space8
     readonly property int quickSettingTileHeight: 72
     readonly property int quickSettingIconSize: 24
-    readonly property int quickSettingsWidth: 560
+    readonly property int quickSettingsWidth: 640
     readonly property int quickSettingsHeight: 680
     readonly property int quickTabWidth: 72
     readonly property int quickTabHeight: 56
@@ -180,6 +191,7 @@ QtObject {
     readonly property int osdVerticalPadding: space16
     readonly property int osdDuration: 1400
     readonly property int mediaOsdDuration: 4000
+    readonly property int mediaOsdDebounce: 500
     readonly property int notificationDuration: 6000
     readonly property int notificationHistoryLimit: 100
     readonly property int wallpaperWidth: 880

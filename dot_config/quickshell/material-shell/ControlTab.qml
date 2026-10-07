@@ -11,8 +11,6 @@ Rectangle {
     implicitHeight: Theme.quickTabHeight
     color: "transparent"
     activeFocusOnTab: true
-    border.width: activeFocus ? 1 : 0
-    border.color: Theme.primary
     Accessible.role: Accessible.Button
     Accessible.name: label
     Accessible.description: selected ? "選択中" : ""
@@ -26,13 +24,14 @@ Rectangle {
             anchors.horizontalCenter: parent.horizontalCenter
             width: Theme.quickTabIndicatorWidth
             height: Theme.quickTabIndicatorHeight
-            radius: Theme.shapeFull
-            color: button.selected ? (pointer.pressed ? Qt.rgba(Theme.secondaryContainerText.r, Theme.secondaryContainerText.g, Theme.secondaryContainerText.b, 0.10) : Theme.secondaryContainer)
-                                   : pointer.pressed ? Qt.rgba(Theme.surfaceVariantText.r, Theme.surfaceVariantText.g, Theme.surfaceVariantText.b, 0.10)
-                                                     : pointer.containsMouse ? Qt.rgba(Theme.surfaceVariantText.r, Theme.surfaceVariantText.g, Theme.surfaceVariantText.b, 0.08) : "transparent"
+            radius: pointer.pressed ? Theme.pressedRadius : height / 2
+            color: button.selected ? Theme.secondaryContainer : "transparent"
+            readonly property color contentColor: button.selected ? Theme.secondaryContainerText : Theme.surfaceVariantText
             border.width: button.activeFocus ? 1 : 0
             border.color: Theme.primary
             Behavior on color { ColorAnimation { duration: Theme.motionDuration } }
+            Behavior on radius { enabled: !Theme.reducedMotion; SpringAnimation { spring: Theme.motionSpring; damping: Theme.motionDamping; epsilon: Theme.motionEpsilon } }
+            Rectangle { anchors.fill: parent; radius: parent.radius; color: pointer.pressed ? Qt.rgba(indicator.contentColor.r, indicator.contentColor.g, indicator.contentColor.b, 0.10) : pointer.containsMouse ? Qt.rgba(indicator.contentColor.r, indicator.contentColor.g, indicator.contentColor.b, 0.08) : "transparent" }
             MaterialIcon { anchors.centerIn: parent; name: button.icon; size: Theme.iconSize; color: button.selected ? Theme.secondaryContainerText : Theme.surfaceVariantText }
         }
         Text {

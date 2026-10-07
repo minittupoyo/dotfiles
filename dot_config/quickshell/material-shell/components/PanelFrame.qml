@@ -8,6 +8,8 @@ PanelWindow {
     property int panelWidth: Theme.launcherWidth
     property int panelHeight: Theme.launcherMaxHeight
     property bool attachedToBar: false
+    // Optional output-local horizontal anchor for panels opened from a bar item.
+    property real rightAnchorX: -1
     property bool opened: false
     property bool exiting: false
     property bool animateClose: true
@@ -36,7 +38,9 @@ PanelWindow {
         MouseArea { anchors.fill: parent; enabled: frame.opened; onClicked: frame.dismissed() }
         Rectangle {
             id: panel
-            x: Math.max(Theme.panelScreenMargin, Math.min((parent.width - width) / 2, parent.width - width - Theme.panelScreenMargin))
+            x: frame.rightAnchorX >= 0
+                ? Math.max(Theme.panelScreenMargin, Math.min(frame.rightAnchorX - width, parent.width - width - Theme.panelScreenMargin))
+                : Math.max(Theme.panelScreenMargin, Math.min((parent.width - width) / 2, parent.width - width - Theme.panelScreenMargin))
             y: frame.attachedToBar ? Theme.barHeight - (height + Theme.space4) * frame.offsetScale : (parent.height - height) / 2
             width: Math.min(frame.panelWidth, Math.max(1, frame.width - Theme.panelScreenMargin * 2))
             height: Math.min(frame.panelHeight, Math.max(1, frame.height - (frame.attachedToBar ? Theme.barHeight : 0) - Theme.panelScreenMargin * 2))

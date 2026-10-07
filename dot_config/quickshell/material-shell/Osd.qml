@@ -10,15 +10,17 @@ PanelWindow {
     property string label: ""
     property real value: 0
     property bool mediaMode: false
+    property bool messageMode: false
+    property bool messageFailed: false
     property string artworkUrl: ""
     property string artist: ""
     visible: false
     anchors.bottom: true
     margins.bottom: Theme.space32
-    implicitWidth: mediaMode ? Theme.mediaOsdWidth : Theme.osdWidth
+    implicitWidth: mediaMode ? Theme.mediaOsdWidth : messageMode ? Math.max(Theme.osdWidth, 360) : Theme.osdWidth
     readonly property int contentHeight: mediaMode
         ? Math.max(Theme.mediaOsdArtworkSize, titleText.implicitHeight + Theme.space4 + artistText.implicitHeight)
-        : Math.max(Theme.iconSize, titleText.implicitHeight + Theme.space8 + progressBar.implicitHeight)
+        : messageMode ? Math.max(Theme.iconSize, titleText.implicitHeight) : Math.max(Theme.iconSize, titleText.implicitHeight + Theme.space8 + progressBar.implicitHeight)
     implicitHeight: contentHeight + Theme.osdVerticalPadding * 2
     exclusionMode: ExclusionMode.Ignore
     color: "transparent"
@@ -26,16 +28,27 @@ PanelWindow {
     WlrLayershell.namespace: "material-shell-osd"
     function show(kind, text, amount, targetScreen) {
         if (!Settings.values.osd) return;
-        screen = targetScreen; mediaMode = false; artworkUrl = ""; artist = "";
+        screen = targetScreen; mediaMode = false; messageMode = false; artworkUrl = ""; artist = "";
         icon = kind; label = text; value = Math.max(0, Math.min(1, amount)); visible = true; hide.restart();
     }
+    function showMessage(text, failed, targetScreen) {
+        if (!Settings.values.osd) return;
+        screen = targetScreen ?? Quickshell.screens[0];
+        mediaMode = false; messageMode = true; messageFailed = failed;
+        artworkUrl = ""; artist = ""; icon = failed ? "close" : "check";
+        label = text; visible = true; hide.restart();
+    }
     function showTrack(player, targetScreen) {
-        if (!Settings.values.osd || !player) return;
+        const title = String(player?.trackTitle || "").trim();
+        const artistName = String(player?.trackArtist || "").trim();
+        const artistKey = artistName.toLocaleLowerCase();
+        const missingArtist = ["unknown", "unknown artist", "artist unknown", "n/a", "none", "アーティスト不明", "不明"].includes(artistKey);
+        if (!Settings.values.osd || !player || !title || !artistName || missingArtist) return;
         screen = targetScreen;
-        mediaMode = true;
+        mediaMode = true; messageMode = false;
         artworkUrl = player.trackArtUrl || "";
-        label = player.trackTitle || player.identity || "再生中";
-        artist = player.trackArtist || "アーティスト不明";
+        label = title;
+        artist = artistName;
         visible = true;
         hide.restart();
     }
@@ -100,7 +113,7 @@ PanelWindow {
                     visible: albumArt.status !== Image.Ready
                 }
             }
-            MaterialIcon { visible: !osd.mediaMode; name: osd.icon; Layout.alignment: Qt.AlignVCenter }
+            MaterialIcon { visible: !osd.mediaMode; name: osd.icon; color: osd.messageMode && osd.messageFailed ? Theme.error : Theme.surfaceText; Layout.alignment: Qt.AlignVCenter }
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: osd.mediaMode ? Theme.space4 : Theme.space8
@@ -128,7 +141,7 @@ PanelWindow {
                 }
                 ExpressiveProgress {
                     id: progressBar
-                    visible: !osd.mediaMode
+                    visible: !osd.mediaMode && !osd.messageMode
                     Layout.fillWidth: true
                     Layout.alignment: Qt.AlignVCenter
                     value: osd.value

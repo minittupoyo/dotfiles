@@ -5,7 +5,9 @@ Rectangle {
     id: tile
     property string title: ""
     property string icon: ""
+    property string subtitle: ""
     property bool checked: false
+    property bool checkable: false
     property bool available: true
     signal toggled()
     Layout.fillWidth: true
@@ -18,9 +20,10 @@ Rectangle {
     activeFocusOnTab: available
     border.width: activeFocus ? 1 : 0
     border.color: Theme.primary
-    Accessible.role: Accessible.CheckBox
+    Accessible.role: checkable ? Accessible.CheckBox : Accessible.Button
     Accessible.name: title
-    Accessible.checkable: true
+    Accessible.description: subtitle
+    Accessible.checkable: checkable
     Accessible.checked: checked
     Keys.onReturnPressed: if (available) toggled()
     Keys.onSpacePressed: if (available) toggled()
@@ -30,14 +33,19 @@ Rectangle {
         anchors.rightMargin: Theme.space16
         spacing: Theme.space12
         MaterialIcon { name: tile.icon; size: Theme.quickSettingIconSize; color: tile.checked ? Theme.secondaryContainerText : Theme.surfaceVariantText }
-        Text {
+        ColumnLayout {
             Layout.fillWidth: true
-            text: tile.title
-            color: tile.checked ? Theme.secondaryContainerText : Theme.surfaceText
-            font.family: Theme.fontFamily
-            font.pixelSize: Theme.bodySize
-            font.weight: Font.Medium
-            elide: Text.ElideRight
+            spacing: Theme.space4
+            Text {
+                Layout.fillWidth: true
+                text: tile.title
+                color: tile.checked ? Theme.secondaryContainerText : Theme.surfaceText
+                font.family: Theme.fontFamily
+                font.pixelSize: Theme.bodySize
+                font.weight: Font.Medium
+                elide: Text.ElideRight
+            }
+            Text { visible: tile.subtitle !== ""; Layout.fillWidth: true; text: tile.subtitle; color: tile.checked ? Theme.secondaryContainerText : Theme.surfaceVariantText; font.family: Theme.fontFamily; font.pixelSize: Theme.labelSize; elide: Text.ElideRight }
         }
         MaterialIcon { name: tile.checked ? "check" : "chevron_right"; visible: tile.available; color: tile.checked ? Theme.secondaryContainerText : Theme.surfaceVariantText }
     }

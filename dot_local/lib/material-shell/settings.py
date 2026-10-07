@@ -36,6 +36,11 @@ def save(data):
     with tempfile.NamedTemporaryFile(mode='w', dir=CONFIG.parent, delete=False) as file:
         json.dump(data, file, indent=2);file.flush();os.fsync(file.fileno());name=file.name
     os.replace(name, CONFIG)
+    try:
+        import hyprland_theme
+        hyprland_theme.apply(mode=data.get('themeMode'))
+    except Exception:
+        pass
     return data
 
 

@@ -9,12 +9,14 @@ Rectangle {
     property string trailingIcon: ""
     property bool emphasized: false
     property bool destructive: false
-    readonly property color containerColor: destructive ? (emphasized ? Theme.error : Theme.errorContainer) : (emphasized ? Theme.primary : Theme.secondaryContainer)
-    readonly property color contentColor: destructive ? (emphasized ? Theme.errorText : Theme.errorContainerText) : (emphasized ? Theme.primaryText : Theme.secondaryContainerText)
+    property bool flat: false
+    property bool alignLeft: false
+    readonly property color containerColor: flat ? "transparent" : destructive ? (emphasized ? Theme.error : Theme.errorContainer) : (emphasized ? Theme.primary : Theme.secondaryContainer)
+    readonly property color contentColor: flat ? (destructive ? Theme.error : Theme.surfaceVariantText) : destructive ? (emphasized ? Theme.errorText : Theme.errorContainerText) : (emphasized ? Theme.primaryText : Theme.secondaryContainerText)
     readonly property color stateLayer: contentColor
     signal clicked()
     implicitHeight: Theme.buttonHeight
-    implicitWidth: content.implicitWidth + Theme.space16 * 2
+    implicitWidth: text === "" && trailingIcon === "" ? Theme.buttonHeight : content.implicitWidth + Theme.space16 * 2
     radius: area.pressed ? Theme.pressedRadius : height / 2
     color: containerColor
     Behavior on radius { enabled: !Theme.reducedMotion; SpringAnimation { spring: Theme.motionSpring; damping: Theme.motionDamping; epsilon: Theme.motionEpsilon } }
@@ -36,10 +38,15 @@ Rectangle {
     }
     RowLayout {
         id: content
-        anchors.centerIn: parent
+        anchors.centerIn: button.alignLeft ? undefined : parent
+        anchors.left: button.alignLeft ? parent.left : undefined
+        anchors.right: button.alignLeft ? parent.right : undefined
+        anchors.leftMargin: Theme.space12
+        anchors.rightMargin: Theme.space12
+        anchors.verticalCenter: parent.verticalCenter
         spacing: Theme.space8
         MaterialIcon { visible: button.icon !== ""; name: button.icon; color: button.contentColor }
-        Text { visible: text !== ""; text: button.text; color: button.contentColor; font.family: Theme.fontFamily; font.pixelSize: Theme.labelLargeSize; font.weight: Font.Medium }
+        Text { visible: text !== ""; Layout.fillWidth: button.alignLeft; text: button.text; elide: Text.ElideRight; color: button.contentColor; font.family: Theme.fontFamily; font.pixelSize: Theme.labelLargeSize; font.weight: Font.Medium }
         MaterialIcon { visible: button.trailingIcon !== ""; name: button.trailingIcon; color: button.contentColor }
     }
     MouseArea { id: area; anchors.fill: parent; enabled: button.enabled; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onPressed: button.focus = false; onClicked: button.clicked() }

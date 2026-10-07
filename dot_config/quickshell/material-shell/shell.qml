@@ -13,6 +13,9 @@ ShellRoot {
         Theme.setMode(Settings.values.themeMode || "dark");
     }
     property string activePanel: ""
+    property bool trayOverflowOpen: false
+    property var trayOverflowScreen: Quickshell.screens[0] ?? null
+    readonly property var systemTrayItems: Settings.values.showTray ? SystemTray.items.values : []
     readonly property string cliDir: Quickshell.env("MATERIAL_SHELL_CLI_DIR") || ((Quickshell.env("HOME") || "") + "/.local/bin")
     property var panelScreen: Quickshell.screens[0] ?? null
     function volumeIcon(volume, muted) {
@@ -37,7 +40,13 @@ ShellRoot {
         if (percentage <= 90) return "battery_charging_90";
         return "battery_charging_full";
     }
-    function closePanels() { launcherOpen = false; wallpaperOpen = false; activePanel = ""; }
+    function closePanels() { launcherOpen = false; wallpaperOpen = false; trayOverflowOpen = false; activePanel = ""; }
+    function toggleTrayOverflow(screen) {
+        if (trayOverflowOpen) { trayOverflowOpen = false; return; }
+        closePanels();
+        trayOverflowScreen = screen ?? activeScreen();
+        trayOverflowOpen = true;
+    }
     function togglePanel(name, screen) {
         if (activePanel === name) { activePanel = ""; return; }
         closePanels(); panelScreen = screen ?? activeScreen(); activePanel = name;
@@ -73,6 +82,20 @@ ShellRoot {
     }
     SessionMenu { id: sessionPanel; opened: root.activePanel === "session"; screen: root.panelScreen; onDismissed: root.activePanel = "" }
     TrayMenu { id: trayMenu; opened: root.activePanel === "tray"; screen: root.panelScreen; onDismissed: root.activePanel = "" }
+    TrayOverflow {
+        id: trayOverflow
+        opened: root.trayOverflowOpen
+        screen: root.trayOverflowScreen
+        items: root.systemTrayItems.length >= 3 ? root.systemTrayItems.slice(2) : []
+        onDismissed: root.trayOverflowOpen = false
+        onActivateItem: item => { root.trayOverflowOpen = false; item.activate(); }
+        onOpenMenu: item => {
+            root.trayOverflowOpen = false;
+            root.panelScreen = root.trayOverflowScreen;
+            trayMenu.openEntry(item.menu, item.title);
+            root.activePanel = "tray";
+        }
+    }
     MediaService { id: mediaService }
     Loader {
         id: notificationLoader
@@ -206,9 +229,33 @@ ShellRoot {
         onExited: (code, status) => { if (code !== 0 && !Settings.error) Settings.error = "保存できませんでした"; Settings.saving = false; }
     }
     Osd { id: osd }
+    property var pendingMediaOsdPlayer: null
+    property string lastMediaOsdKey: ""
+    property double lastMediaOsdAt: 0
     Connections {
         target: mediaService.player
-        function onPostTrackChanged() { osd.showTrack(mediaService.player, root.activeScreen()); }
+        function onPostTrackChanged() {
+            root.pendingMediaOsdPlayer = mediaService.player;
+            mediaOsdDebounce.restart();
+        }
+    }
+    Timer {
+        id: mediaOsdDebounce
+        interval: Theme.mediaOsdDebounce
+        onTriggered: {
+            const player = root.pendingMediaOsdPlayer;
+            root.pendingMediaOsdPlayer = null;
+            if (!player || player !== mediaService.player || !player.isPlaying) return;
+            const title = String(player.trackTitle || "").trim();
+            const artist = String(player.trackArtist || "").trim();
+            if (!title || !artist) return;
+            const key = JSON.stringify([player.dbusName, title, artist]);
+            const now = Date.now();
+            if (key === root.lastMediaOsdKey && now - root.lastMediaOsdAt < Theme.mediaOsdDuration) return;
+            root.lastMediaOsdKey = key;
+            root.lastMediaOsdAt = now;
+            osd.showTrack(player, root.activeScreen());
+        }
     }
     IpcHandler {
         target: "osd"
@@ -250,6 +297,7 @@ ShellRoot {
         opened: root.wallpaperOpen
         screen: root.wallpaperScreen
         onDismissed: root.wallpaperOpen = false
+        onMessageRequested: (text, failed) => osd.showMessage(text, failed, root.wallpaperScreen)
     }
     IpcHandler {
         target: "wallpaper"
@@ -335,8 +383,16 @@ ShellRoot {
             color: "transparent"
             readonly property var monitor: Hyprland.monitorFor(screen)
             Rectangle {
+                id: barSurface
                 anchors.fill: parent
                 color: Theme.surfaceContainer
+                MouseArea {
+                    anchors.fill: parent
+                    acceptedButtons: Qt.RightButton
+                    onClicked: mouse => {
+                        if (mouse.button === Qt.RightButton) root.openControlTab("quick", bar.screen);
+                    }
+                }
                 RowLayout {
                     id: left
                     anchors.left: parent.left
@@ -423,7 +479,7 @@ ShellRoot {
                 }
                 Chip {
                     anchors.centerIn: parent
-                    label: Qt.formatDateTime(clock.date, "yyyy/MM/dd HH:mm")
+                    label: Qt.formatDateTime(clock.date, Settings.values.clock24 ? "yyyy/MM/dd HH:mm" : "yyyy/MM/dd AP h:mm")
                     foreground: Theme.surfaceText
                     hint: Qt.formatDateTime(clock.date, "yyyy年M月d日 dddd")
                 }
@@ -432,9 +488,6 @@ ShellRoot {
                     anchors.rightMargin: Theme.barSidePadding
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: 2
-                    Chip { visible: Settings.values.showCpu && bar.width > 1700; icon: "memory"; label: root.stats.cpu + "%"; hint: "CPU使用率" }
-                    Chip { visible: Settings.values.showMemory && bar.width > 1700; icon: "storage"; label: root.stats.memory + "%"; hint: "メモリ使用率" }
-                    Rectangle { visible: (Settings.values.showCpu || Settings.values.showMemory) && bar.width > 1700; Layout.preferredWidth: 1; Layout.preferredHeight: 16; color: Theme.outlineVariant }
                     Chip { visible: Settings.values.showNetwork && bar.width > 1500; icon: root.stats.networkIcon; label: root.stats.network; interactive: true; hint: "ネットワーク接続"; onClicked: root.toggleControlTab("network", bar.screen) }
                     Chip {
                         icon: root.volumeIcon(root.sink?.audio?.volume ?? 0, root.sink?.audio?.muted ?? false)
@@ -451,9 +504,11 @@ ShellRoot {
                         hint: "バッテリー残量"
                         foreground: (root.stats.battery?.percentage ?? 100) < 20 ? Theme.error : Theme.surfaceVariantText
                     }
-                    Chip { visible: bar.width > 1100; icon: "wallpaper"; interactive: true; hint: "壁紙と配色"; onClicked: root.toggleWallpaper(bar.screen) }
+                    Chip { visible: Settings.values.showCpu && bar.width > 1700; icon: "memory"; label: root.stats.cpu + "%"; hint: "CPU使用率" }
+                    Chip { visible: Settings.values.showMemory && bar.width > 1700; icon: "storage"; label: root.stats.memory + "%"; hint: "メモリ使用率" }
+                    Rectangle { Layout.preferredWidth: 1; Layout.preferredHeight: 16; Layout.leftMargin: Theme.space4; Layout.rightMargin: Theme.space4; color: Theme.outlineVariant }
                     Repeater {
-                        model: Settings.values.showTray && bar.width > 1100 ? SystemTray.items.values : []
+                        model: bar.width > 1100 ? (root.systemTrayItems.length >= 3 ? root.systemTrayItems.slice(0, 2) : root.systemTrayItems) : []
                         Rectangle {
                             id: trayButton
                             required property var modelData
@@ -464,9 +519,11 @@ ShellRoot {
                             activeFocusOnTab: true
                             Accessible.role: Accessible.Button
                             Accessible.name: modelData.tooltipTitle || modelData.title || modelData.id
-                            Image { id: trayImage; anchors.centerIn: parent; width: Theme.barIconSize; height: width; sourceSize.width: width; sourceSize.height: height; source: trayButton.modelData.icon }
-                            MaterialIcon { anchors.centerIn: parent; name: "apps"; size: Theme.barIconSize; visible: trayImage.status !== Image.Ready }
-                            function showMenu() { if (!modelData.hasMenu) return; root.closePanels(); root.panelScreen = bar.screen; trayMenu.openEntry(modelData.menu, modelData.title); root.activePanel = "tray"; }
+                            readonly property bool inputMethodTrayItem: String(modelData.id || "").toLowerCase().includes("fcitx") || String(modelData.title || "").toLowerCase().includes("input method")
+                            Image { id: trayImage; anchors.centerIn: parent; width: Theme.barIconSize; height: width; sourceSize.width: width; sourceSize.height: height; source: trayButton.inputMethodTrayItem ? "" : trayButton.modelData.icon }
+                            MaterialIcon { anchors.centerIn: parent; name: "keyboard"; size: Theme.barIconSize; visible: trayButton.inputMethodTrayItem }
+                            MaterialIcon { anchors.centerIn: parent; name: "apps"; size: Theme.barIconSize; visible: !trayButton.inputMethodTrayItem && trayImage.status !== Image.Ready }
+                            function showMenu() { if (!modelData.hasMenu) return; const itemRightX = trayButton.mapToItem(barSurface, trayButton.width, 0).x; root.closePanels(); root.panelScreen = bar.screen; trayMenu.openEntry(modelData.menu, modelData.title, itemRightX); root.activePanel = "tray"; }
                             Keys.onReturnPressed: { if (modelData.onlyMenu) showMenu(); else modelData.activate(); }
                             Keys.onSpacePressed: showMenu()
                             MouseArea {
@@ -481,10 +538,21 @@ ShellRoot {
                             BarTooltip { target: trayButton; text: trayButton.modelData.tooltipTitle || trayButton.modelData.title; active: trayArea.containsMouse }
                         }
                     }
+                    Chip {
+                        visible: Settings.values.showTray && bar.width > 1100 && root.systemTrayItems.length >= 3
+                        icon: "apps"
+                        label: "+" + (root.systemTrayItems.length - 2)
+                        interactive: true
+                        hint: "追加のシステムトレイ項目 " + (root.systemTrayItems.length - 2) + " 件"
+                        onClicked: root.toggleTrayOverflow(bar.screen)
+                    }
+                    Rectangle { visible: Settings.values.showTray && bar.width > 1100 && root.systemTrayItems.length > 0; Layout.preferredWidth: 1; Layout.preferredHeight: 16; Layout.leftMargin: Theme.space4; Layout.rightMargin: Theme.space4; color: Theme.outlineVariant }
                     Chip { icon: Settings.values.dnd ? "notifications_off" : "notifications"; interactive: true; hint: "通知"; onClicked: root.toggleControlTab("notifications", bar.screen) }
-                    Chip { icon: "tune"; interactive: true; hint: "コントロールパネル"; onClicked: root.toggleControlTab("quick", bar.screen) }
                     Chip { visible: bar.width > 1400; icon: "content_paste"; interactive: true; hint: "クリップボード"; onClicked: root.toggleControlTab("clipboard", bar.screen) }
                     Chip { visible: bar.width > 1400; icon: "screenshot_monitor"; interactive: true; hint: "スクリーンショット"; onClicked: root.toggleControlTab("capture", bar.screen) }
+                    Chip { visible: bar.width > 1100; icon: "wallpaper"; interactive: true; hint: "壁紙と配色"; onClicked: root.toggleWallpaper(bar.screen) }
+                    Rectangle { Layout.preferredWidth: 1; Layout.preferredHeight: 16; Layout.leftMargin: Theme.space4; Layout.rightMargin: Theme.space4; color: Theme.outlineVariant }
+                    Chip { icon: "tune"; interactive: true; hint: "コントロールパネル"; onClicked: root.toggleControlTab("quick", bar.screen) }
                     Chip { icon: "settings"; interactive: true; hint: "設定"; onClicked: root.toggleControlTab("settings", bar.screen) }
                     Chip { icon: "power_settings_new"; interactive: true; hint: "セッションメニュー"; onClicked: root.togglePanel("session", bar.screen) }
                 }

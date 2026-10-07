@@ -79,6 +79,11 @@ def update(path=None, set_wallpaper=False):
             if name and os.path.exists(name):
                 os.unlink(name)
         backend.save(path)
+        try:
+            import hyprland_theme
+            hyprland_theme.apply(palette=palette)
+        except Exception:
+            pass
         print(f'Palette updated: {path}', flush=True)
 
 
