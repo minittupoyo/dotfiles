@@ -7,6 +7,7 @@ import "modules/lock"
 import "modules/media"
 import "modules/notifications"
 import "modules/osd"
+import "modules/screenshot"
 import "modules/quicksettings"
 import "modules/wallpaper"
 
@@ -32,6 +33,9 @@ ShellRoot {
 
     // ランチャー (qs ipc call launcher toggle|clipboard)
     Launcher {}
+
+    // スクリーンショットのメニュー (Print キー。qs ipc call screenshot toggle でも開く)
+    ScreenshotMenu {}
 
     // ダッシュボード (バー中央の島のクリック。qs ipc call dashboard toggle でも開く)
     Dashboard {}

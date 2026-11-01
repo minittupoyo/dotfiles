@@ -13,6 +13,7 @@ local qs = "qs -p $HOME/.config/quickshell/shell ipc call"
 hl.bind(mainMod .. " + W", hl.dsp.exec_cmd("sh -c '" .. qs .. " wallpaper toggle'"))
 hl.bind(mainMod .. " + R", hl.dsp.exec_cmd("sh -c '" .. qs .. " launcher toggle'"))
 hl.bind(mainMod .. " + SHIFT + V", hl.dsp.exec_cmd("sh -c '" .. qs .. " launcher clipboard'"))
+hl.bind("Print", hl.dsp.exec_cmd("sh -c '" .. qs .. " screenshot toggle'"))
 hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("sh -c '" .. qs .. " lock lock'"))
 hl.bind(mainMod .. " + N", hl.dsp.exec_cmd("sh -c '" .. qs .. " quicksettings toggle'"))
 
