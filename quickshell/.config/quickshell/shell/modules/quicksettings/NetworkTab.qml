@@ -5,7 +5,7 @@ import "../../components"
 import "../../services"
 import "../../tokens"
 
-// 「ネットワーク」タブ: 各インタフェースの接続状態・IP・ゲートウェイ・リンク速度・送受信の速さ。
+// 「回線」タブ: WiFi の管理 (WifiSection) と、各インタフェースの接続状態・IP・ゲートウェイ・リンク速度・送受信の速さ。
 // 開いている間だけ Network が 2 秒ごとに詳細を更新する。
 Item {
     id: root
@@ -66,6 +66,11 @@ Item {
         anchors.right: parent.right
         anchors.top: parent.top
         spacing: 12
+
+        WifiSection {
+            Layout.fillWidth: true
+            active: root.active
+        }
 
         Repeater {
             model: ScriptModel {
