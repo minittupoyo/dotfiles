@@ -7,6 +7,7 @@ import "modules/lock"
 import "modules/media"
 import "modules/notifications"
 import "modules/osd"
+import "modules/power"
 import "modules/screenshot"
 import "modules/switcher"
 import "modules/quicksettings"
@@ -43,6 +44,9 @@ ShellRoot {
 
     // ダッシュボード (バー中央の島のクリック。qs ipc call dashboard toggle でも開く)
     Dashboard {}
+
+    // 電源メニュー (SUPER+M。qs ipc call power toggle でも開く)
+    PowerMenu {}
 
     // ロック画面 (qs ipc call lock lock / SUPER+L / アイドル 15 分)
     LockScreen {}

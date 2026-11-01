@@ -3,13 +3,13 @@ local terminal = "kitty"
 
 hl.bind(mainMod .. " + Return", hl.dsp.exec_cmd(terminal))
 hl.bind(mainMod .. " + Q", hl.dsp.window.close())
-hl.bind(mainMod .. " + M", hl.dsp.exec_cmd("command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()'"))
 hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
 hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))
 
 -- quickshell (IPC)。-p で対象インスタンスを固定する
 local qs = "qs -p $HOME/.config/quickshell/shell ipc call"
+hl.bind(mainMod .. " + M", hl.dsp.exec_cmd("sh -c '" .. qs .. " power toggle'"))
 hl.bind(mainMod .. " + W", hl.dsp.exec_cmd("sh -c '" .. qs .. " wallpaper toggle'"))
 hl.bind(mainMod .. " + R", hl.dsp.exec_cmd("sh -c '" .. qs .. " launcher toggle'"))
 hl.bind(mainMod .. " + period", hl.dsp.exec_cmd("sh -c '" .. qs .. " launcher emoji'"))
