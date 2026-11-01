@@ -20,6 +20,17 @@ OverlayWindow {
         }
     }
 
+    // クイック設定が閉じ切ってから開く (撮る画面にパネルが写らないよう、少し待つ)
+    Connections {
+        target: UiState
+        function onScreenshotOpen() { openDelay.restart(); }
+    }
+    Timer {
+        id: openDelay
+        interval: 350
+        onTriggered: root.open()
+    }
+
     IpcHandler {
         target: "screenshot"
         function toggle(): void { root.toggle(); }

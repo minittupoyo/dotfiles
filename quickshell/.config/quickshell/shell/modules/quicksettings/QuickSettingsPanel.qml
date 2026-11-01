@@ -10,11 +10,11 @@ Item {
 
     signal closeRequested()
 
-    readonly property var tabNames: ["概要", "Bluetooth", "サウンド", "通知"]
+    readonly property var tabNames: ["概要", "回線", "Bluetooth", "サウンド", "通知"]
     property int startTab: 0    // 開いたときのタブ
     property int tab: 0
 
-    readonly property var pages: [overview, bluetooth, sound, notifications]
+    readonly property var pages: [overview, network, bluetooth, sound, notifications]
 
     implicitHeight: col.implicitHeight
     focus: true
@@ -84,12 +84,21 @@ Item {
                 onCloseRequested: root.closeRequested()
                 onGotoTab: i => root.tab = i
             }
+            NetworkTab {
+                id: network
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                visible: root.tab === 1
+                active: visible
+                opacity: fade.value
+            }
             BluetoothTab {
                 id: bluetooth
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.top: parent.top
-                visible: root.tab === 1
+                visible: root.tab === 2
                 opacity: fade.value
             }
             SoundTab {
@@ -97,7 +106,7 @@ Item {
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.top: parent.top
-                visible: root.tab === 2
+                visible: root.tab === 3
                 opacity: fade.value
             }
             NotificationsTab {
@@ -105,7 +114,7 @@ Item {
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.top: parent.top
-                visible: root.tab === 3
+                visible: root.tab === 4
                 opacity: fade.value
             }
         }

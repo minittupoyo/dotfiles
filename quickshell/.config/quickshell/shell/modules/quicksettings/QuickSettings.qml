@@ -14,7 +14,7 @@ OverlayWindow {
     alignRight: true
     topOffset: 72       // バー (60px) の下
     scrimOpacity: 0     // 背景は暗くしない (外側のクリックでは閉じる)
-    // 次に開くときのタブ (0 = 概要 / 1 = Bluetooth / 2 = サウンド / 3 = 通知)
+    // 次に開くときのタブ (0 = 概要 / 1 = ネットワーク / 2 = Bluetooth / 3 = サウンド / 4 = 通知)
     property int startTab: 0
 
     content: Component {

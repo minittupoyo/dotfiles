@@ -8,7 +8,7 @@ import "../../tokens"
 
 // クイック設定の「概要」タブ。このデスクトップ機 (バッテリー・輝度なし、有線) に合わせた構成:
 //   タイル (Bluetooth / おやすみ / スリープ抑止) → 音量・マイク → メディア → 通知の履歴 → 電源
-// タイルを右クリックすると、その詳細のタブへ移る。
+// タイルを右クリックすると、その詳細のタブへ移る (ネットワークはクリックでも)。
 Item {
     id: root
 
@@ -41,10 +41,21 @@ Item {
         spacing: 16
 
         // ---- タイル ----
-        RowLayout {
+        GridLayout {
             Layout.fillWidth: true
-            spacing: 8
+            columns: 2
+            columnSpacing: 8
+            rowSpacing: 8
 
+            ToggleTile {
+                Layout.fillWidth: true
+                Layout.preferredWidth: 1
+                icon: Network.kind === "wireless" ? "wifi" : Network.connected ? "lan" : "wifi_off"
+                text: Network.connected ? (Network.kind === "wireless" ? "無線" : "有線") : "未接続"
+                checked: Network.connected
+                onClicked: root.gotoTab(1)
+                onRightClicked: root.gotoTab(1)
+            }
             ToggleTile {
                 Layout.fillWidth: true
                 Layout.preferredWidth: 1
@@ -53,7 +64,7 @@ Item {
                 text: "Bluetooth"
                 checked: root.adapter !== null && root.adapter.enabled
                 onClicked: root.adapter.enabled = !root.adapter.enabled
-                onRightClicked: root.gotoTab(1)
+                onRightClicked: root.gotoTab(2)
             }
             ToggleTile {
                 Layout.fillWidth: true
@@ -62,7 +73,7 @@ Item {
                 text: "おやすみ"
                 checked: Notifications.dnd
                 onClicked: Notifications.setDnd(!Notifications.dnd)
-                onRightClicked: root.gotoTab(3)
+                onRightClicked: root.gotoTab(4)
             }
             ToggleTile {
                 Layout.fillWidth: true
@@ -71,6 +82,17 @@ Item {
                 text: "スリープ抑止"
                 checked: IdleInhibit.active
                 onClicked: IdleInhibit.toggle()
+            }
+            ToggleTile {
+                Layout.fillWidth: true
+                Layout.preferredWidth: 1
+                icon: "screenshot_region"
+                text: "スクリーンショット"
+                checked: false
+                onClicked: {
+                    root.closeRequested();
+                    UiState.openScreenshot();
+                }
             }
         }
 

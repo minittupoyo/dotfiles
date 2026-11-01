@@ -22,6 +22,13 @@ Singleton {
         dashboardToggle();
     }
 
+    // スクリーンショットのメニューを開く合図 (クイック設定のタイルから送り、ScreenshotMenu が受ける)
+    signal screenshotOpen()
+
+    function openScreenshot() {
+        screenshotOpen();
+    }
+
     function openMedia() {
         mediaOpen();
     }
