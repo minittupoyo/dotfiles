@@ -99,6 +99,7 @@ Item {
                 anchors.right: parent.right
                 anchors.top: parent.top
                 visible: root.tab === 2
+                active: visible
                 opacity: fade.value
             }
             SoundTab {
