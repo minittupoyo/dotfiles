@@ -30,6 +30,9 @@ Item {
     readonly property int emojiCell: 64
     readonly property int emojiRows: 5
     readonly property bool isEmoji: mode === "emoji"
+    // 絵文字で直接開いた (SUPER+. / launcher emoji) ときは、絵文字だけの専用の見た目にする
+    // (モードのボタンと Tab の切り替えなし)。ランチャーから Tab で入ったときは、これまでどおり。
+    readonly property bool dedicated: startMode === "emoji"
 
     // 高さは中身に合わせる (OverlayWindow が implicitHeight に追従する)
     implicitHeight: col.implicitHeight
@@ -203,7 +206,8 @@ Item {
                             } else if (event.key === Qt.Key_PageUp) {
                                 root.isEmoji ? root.moveGrid(0, -root.emojiRows) : root.move(-root.maxRows);
                             } else if (event.key === Qt.Key_Tab) {
-                                root.nextMode();
+                                if (!root.dedicated)
+                                    root.nextMode();
                             } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
                                 if (root.isEmoji) {
                                     const it = root.emojiResults[grid.currentIndex];
@@ -232,6 +236,7 @@ Item {
 
                 // モード切替 (Tab でも切り替わる)
                 Button {
+                    visible: !root.dedicated
                     size: "s"
                     variant: "tonal"
                     text: "アプリ"
@@ -241,6 +246,7 @@ Item {
                     onClicked: root.setMode("apps")
                 }
                 Button {
+                    visible: !root.dedicated
                     size: "s"
                     variant: "tonal"
                     text: "履歴"
@@ -250,6 +256,7 @@ Item {
                     onClicked: root.setMode("clipboard")
                 }
                 Button {
+                    visible: !root.dedicated
                     size: "s"
                     variant: "tonal"
                     text: "絵文字"
@@ -375,7 +382,9 @@ Item {
 
         Label {
             Layout.alignment: Qt.AlignHCenter
-            text: root.isEmoji ? "←↑↓→ 選択  ·  Enter コピー  ·  Tab 切替  ·  Esc 閉じる" : "↑↓ 選択  ·  Enter 実行  ·  Tab 切替  ·  Esc 閉じる"
+            text: root.dedicated ? "←↑↓→ 選択  ·  Enter コピー  ·  Esc 閉じる"
+                : root.isEmoji ? "←↑↓→ 選択  ·  Enter コピー  ·  Tab 切替  ·  Esc 閉じる"
+                : "↑↓ 選択  ·  Enter 実行  ·  Tab 切替  ·  Esc 閉じる"
             role: Typography.labelMedium
             color: Colors.m3OnSurfaceVariant
         }
