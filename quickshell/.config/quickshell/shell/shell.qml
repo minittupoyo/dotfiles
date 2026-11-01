@@ -3,6 +3,7 @@ import Quickshell
 import "modules/bar"
 import "modules/launcher"
 import "modules/notifications"
+import "modules/quicksettings"
 import "modules/wallpaper"
 
 ShellRoot {
@@ -15,6 +16,9 @@ ShellRoot {
 
     // 通知のポップアップ (通知サーバー本体は services/Notifications)
     NotificationPopups {}
+
+    // クイック設定 (バーのボタン / qs ipc call quicksettings toggle)
+    QuickSettings {}
 
     // ランチャー (qs ipc call launcher toggle|clipboard)
     Launcher {}

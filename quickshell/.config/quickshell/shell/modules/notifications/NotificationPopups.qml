@@ -22,7 +22,8 @@ Scope {
             screen: modelData
             readonly property bool focusedHere: modelData.name === root.focusedName    // screen ではなく modelData を読む (visible との束縛ループを避ける)
 
-            visible: focusedHere && Notifications.popups.length > 0
+            // クイック設定が開いている間は、同じ右上に重ならないよう隠す
+            visible: focusedHere && Notifications.popups.length > 0 && !UiState.quickSettingsOpen
 
             anchors {
                 top: true

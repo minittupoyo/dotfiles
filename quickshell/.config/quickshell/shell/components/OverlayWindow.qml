@@ -26,6 +26,10 @@ Scope {
     property real panelHeight: 720       // 既定の高さ。中身が implicitHeight を持てばそれに追従する
     property real padding: 24
     property real yFraction: 0.5         // 縦位置: 0 = 上端 / 0.5 = 中央
+    property real topOffset: -1          // 0 以上なら、上端からの絶対位置 (yFraction より優先)
+    property bool alignRight: false      // true なら右端に寄せる (クイック設定)。拡大縮小も右上を起点にする
+    property real edgeMargin: 12         // alignRight のときの右端との間隔
+    property real scrimOpacity: 0.4      // 背景の暗さ。0 でも、外側のクリックで閉じる
     property string namespace: "shell:overlay"
 
     function open() {
@@ -93,7 +97,7 @@ Scope {
             Rectangle {
                 anchors.fill: parent
                 color: Colors.m3Scrim
-                opacity: 0.4 * fade.value
+                opacity: root.scrimOpacity * fade.value
             }
             MouseArea {
                 anchors.fill: parent
@@ -120,8 +124,9 @@ Scope {
 
                 width: Math.min(root.panelWidth, win.width - 96)
                 height: heightSpring.value
-                x: (win.width - width) / 2
-                y: (win.height - height) * root.yFraction
+                x: root.alignRight ? win.width - width - root.edgeMargin : (win.width - width) / 2
+                y: root.topOffset >= 0 ? root.topOffset : (win.height - height) * root.yFraction
+                transformOrigin: root.alignRight ? Item.TopRight : Item.Center
                 level: 3
                 radius: Shapes.extraLarge
                 opacity: fade.value

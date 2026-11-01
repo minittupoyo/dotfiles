@@ -2,6 +2,8 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
+import Quickshell.Wayland
+import "../../services"
 import "../../tokens"
 
 // 画面上端のバー (モニターごとに 1 つ)。左・中央・右の 3 つの「島」を透明な背景の上に浮かせる。
@@ -26,6 +28,12 @@ PanelWindow {
 
     readonly property var monitor: Hyprland.monitorFor(screen)
 
+    // スリープ・ロックの抑止 (クイック設定のトグル)。常に表示されるバーのウィンドウに付ける
+    IdleInhibitor {
+        window: win
+        enabled: IdleInhibit.active
+    }
+
     BarIsland {
         anchors.left: parent.left
         anchors.verticalCenter: parent.verticalCenter
@@ -47,5 +55,6 @@ PanelWindow {
         Tray {}
         NetworkIcon {}
         Volume {}
+        NotificationButton {}
     }
 }
