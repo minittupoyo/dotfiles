@@ -7,9 +7,11 @@ import Quickshell
 // 各ロールは { size, lineHeight, weight, tracking }。表示は components/Label.qml 経由で行う。
 // *Emphasized は M3 Expressive の強調版 (出典側で TODO 付き = 値が変わる可能性あり)。
 Singleton {
-    // 欧文は Google Sans Flex、無ければ Roboto Flex、日本語は Noto Sans CJK JP を明示
-    // (fontconfig 既定だと KR 字形に寄るため)。
-    readonly property var families: ["Google Sans Flex", "Roboto Flex", "Noto Sans CJK JP"]
+    // QML の font には複数ファミリー指定 (font.families) がないため、主フォントだけを指定し、
+    // 日本語など主フォントに無い字形は fontconfig のフォールバックに任せる。
+    // 期待するフォールバック順: Roboto Flex → Noto Sans CJK JP (設定は fontconfig/ 側)。
+    readonly property string family: "Google Sans Flex"
+    readonly property var fallbackFamilies: ["Roboto Flex", "Noto Sans CJK JP"]
     readonly property var displayLarge: ({ size: 57, lineHeight: 64, weight: Font.Normal, tracking: -0.2 })
     readonly property var displayMedium: ({ size: 45, lineHeight: 52, weight: Font.Normal, tracking: 0 })
     readonly property var displaySmall: ({ size: 36, lineHeight: 44, weight: Font.Normal, tracking: 0 })
