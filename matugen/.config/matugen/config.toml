@@ -1,0 +1,27 @@
+# 配色パイプライン: scripts/apply-wallpaper.sh から呼ぶ。
+# scheme (-t scheme-expressive) / --prefer は CLI 側で指定する (非対話で必須)。
+[config]
+
+[templates.quickshell]
+input_path  = "~/.config/matugen/templates/colors.json"
+output_path = "~/.local/state/quickshell/colors.json"
+
+[templates.hyprland]
+input_path  = "~/.config/matugen/templates/hypr-colors.lua"
+output_path = "~/.config/hypr/colors.lua"
+
+[templates.kitty]
+input_path  = "~/.config/matugen/templates/kitty-colors.conf"
+output_path = "~/.config/kitty/colors.conf"
+
+[templates.qt6ct]
+input_path  = "~/.config/matugen/templates/qt6ct-colors.conf"
+output_path = "~/.config/qt6ct/colors/matugen.conf"
+
+[templates.gtk3]
+input_path  = "~/.config/matugen/templates/gtk.css"
+output_path = "~/.config/gtk-3.0/gtk.css"
+
+[templates.gtk4]
+input_path  = "~/.config/matugen/templates/gtk.css"
+output_path = "~/.config/gtk-4.0/gtk.css"
