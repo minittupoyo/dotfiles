@@ -9,6 +9,7 @@ hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))
 
 -- quickshell (IPC)。-p で対象インスタンスを固定する
 local qs = "qs -p $HOME/.config/quickshell/shell ipc call"
+hl.bind(mainMod .. " + Tab", hl.dsp.exec_cmd("sh -c '" .. qs .. " overview toggle'"))
 hl.bind(mainMod .. " + M", hl.dsp.exec_cmd("sh -c '" .. qs .. " power toggle'"))
 hl.bind(mainMod .. " + W", hl.dsp.exec_cmd("sh -c '" .. qs .. " wallpaper toggle'"))
 hl.bind(mainMod .. " + R", hl.dsp.exec_cmd("sh -c '" .. qs .. " launcher toggle'"))

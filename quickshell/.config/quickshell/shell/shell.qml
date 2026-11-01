@@ -7,6 +7,7 @@ import "modules/lock"
 import "modules/media"
 import "modules/notifications"
 import "modules/osd"
+import "modules/overview"
 import "modules/power"
 import "modules/screenshot"
 import "modules/switcher"
@@ -44,6 +45,9 @@ ShellRoot {
 
     // ダッシュボード (バー中央の島のクリック。qs ipc call dashboard toggle でも開く)
     Dashboard {}
+
+    // ワークスペースのオーバービュー (SUPER+Tab。qs ipc call overview toggle でも開く)
+    Overview {}
 
     // 電源メニュー (SUPER+M。qs ipc call power toggle でも開く)
     PowerMenu {}
