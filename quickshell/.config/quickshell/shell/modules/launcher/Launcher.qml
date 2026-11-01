@@ -3,7 +3,7 @@ import Quickshell.Io
 import "../../components"
 import "../../services"
 
-// ランチャー。開閉は IPC: qs ipc call launcher toggle|open|clipboard|close
+// ランチャー。開閉は IPC: qs ipc call launcher toggle|open|clipboard|emoji|close
 OverlayWindow {
     id: root
 
@@ -12,7 +12,7 @@ OverlayWindow {
     yFraction: 0.28
     padding: 20
 
-    // 次に開くときのモード ("apps" | "clipboard")
+    // 次に開くときのモード ("apps" | "clipboard" | "emoji")
     property string startMode: "apps"
 
     content: Component {
@@ -25,6 +25,7 @@ OverlayWindow {
     Component.onCompleted: {
         Apps.all.length;
         Clipboard.refresh();
+        Emoji.ensure();
     }
 
     IpcHandler {
@@ -37,6 +38,15 @@ OverlayWindow {
                 root.close();
             } else {
                 root.startMode = "clipboard";
+                root.open();
+            }
+        }
+        // すでに絵文字で開いていれば閉じる。ほかのモードで開いていれば絵文字に切り替える
+        function emoji(): void {
+            if (root.shown && root.startMode === "emoji") {
+                root.close();
+            } else {
+                root.startMode = "emoji";
                 root.open();
             }
         }
