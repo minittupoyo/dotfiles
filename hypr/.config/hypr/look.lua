@@ -56,4 +56,4 @@ hl.animation({ leaf = "border",     enabled = true, speed = 1, spring = "effects
 hl.animation({ leaf = "layers",     enabled = true, speed = 1, spring = "spatialFast" })
 hl.animation({ leaf = "layersIn",   enabled = true, speed = 1, spring = "effectsDefault", style = "fade" })
 hl.animation({ leaf = "layersOut",  enabled = true, speed = 1, spring = "effectsFast",    style = "fade" })
-hl.animation({ leaf = "workspaces", enabled = true, speed = 1, spring = "spatialDefault", style = "slide" })
+hl.animation({ leaf = "workspaces", enabled = true, speed = 1, spring = "spatialDefault", style = "slidefade" })
