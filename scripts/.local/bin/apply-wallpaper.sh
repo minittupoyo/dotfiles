@@ -15,6 +15,11 @@ awww_pid=$!
 # --prefer は非対話実行で必須 (候補色が複数ある画像で停止するため)
 matugen -t scheme-expressive -m "$mode" --prefer saturation -q image "$img"
 
+# 現在の壁紙を記録 (壁紙セレクターが「現在」の印に使う)
+state="${XDG_STATE_HOME:-$HOME/.local/state}/quickshell"
+mkdir -p "$state"
+printf '%s\n' "$img" > "$state/wallpaper"
+
 # 反映 (起動していないものは黙って無視)
 pkill -USR1 -x kitty 2>/dev/null || true                 # kitty: 設定再読込
 [[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]] && hyprctl reload >/dev/null || true

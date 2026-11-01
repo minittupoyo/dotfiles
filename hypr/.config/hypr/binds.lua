@@ -8,9 +8,10 @@ hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
 hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))
 
--- TODO(phase 5/6): quickshell IPC
--- hl.bind(mainMod .. " + R",     hl.dsp.exec_cmd("qs -p ~/.config/quickshell/shell ipc call launcher toggle"))
--- hl.bind(mainMod .. " + SHIFT + W", hl.dsp.exec_cmd("qs -p ~/.config/quickshell/shell ipc call wallpaper toggle"))
+-- quickshell (IPC)。-p で対象インスタンスを固定する
+local qs = "qs -p $HOME/.config/quickshell/shell ipc call"
+hl.bind(mainMod .. " + W", hl.dsp.exec_cmd("sh -c '" .. qs .. " wallpaper toggle'"))
+-- TODO(phase 6): ランチャー  hl.bind(mainMod .. " + R", hl.dsp.exec_cmd("sh -c '" .. qs .. " launcher toggle'"))
 
 hl.bind(mainMod .. " + left",  hl.dsp.focus({ direction = "left" }))
 hl.bind(mainMod .. " + right", hl.dsp.focus({ direction = "right" }))
