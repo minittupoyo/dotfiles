@@ -111,20 +111,20 @@ Rectangle {
                     implicitHeight: 40
                     radius: Shapes.full
                     color: Colors.m3SecondaryContainer
-                    Row {
+                    RowLayout {
                         anchors.centerIn: parent
                         spacing: 8
                         Icon {
-                            anchors.verticalCenter: parent.verticalCenter
                             name: parent.parent.modelData.icon
                             size: 20
                             color: Colors.m3OnSecondaryContainer
                         }
                         Label {
-                            anchors.verticalCenter: parent.verticalCenter
                             text: parent.parent.modelData.text
                             role: Typography.labelLarge
                             color: Colors.m3OnSecondaryContainer
+                            // labelLarge は行の中で約 2px 下に描かれるので、アイコンと並べるときは描画だけ上げる
+                            transform: Translate { y: -2 }
                         }
                     }
                 }
