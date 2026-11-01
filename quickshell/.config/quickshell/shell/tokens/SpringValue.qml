@@ -1,5 +1,4 @@
 import QtQuick
-import "../tokens"
 
 // スプリングで target に追従する値。M3 Expressive のスプリング (Motion.*) を物理どおりに解く。
 //   x'' = -stiffness * (x - target) - 2 * damping * sqrt(stiffness) * x'   (質量 1)
