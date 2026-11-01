@@ -14,6 +14,8 @@ Text {
     // FILL = 1 のグリフは輪郭が重なっており、既定の描画 (distance field) では塗りに穴が開く。
     // NativeRendering (FreeType でラスタライズ) だと正しく塗れる。CurveRendering は輪郭線が残る。
     renderType: Text.NativeRendering
+    // ヒンティングも切る。小さいサイズでは輪郭の重なりがずれて、塗りの中に細い線が残る (notifications など)。
+    font.hintingPreference: Font.PreferNoHinting
 
     text: name
     color: Colors.m3OnSurface
