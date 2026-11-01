@@ -11,6 +11,10 @@ Text {
     property real fill: 0
     property real weight: 400
 
+    // FILL = 1 のグリフは輪郭が重なっており、既定の描画 (distance field) では塗りに穴が開く。
+    // NativeRendering (FreeType でラスタライズ) だと正しく塗れる。CurveRendering は輪郭線が残る。
+    renderType: Text.NativeRendering
+
     text: name
     color: Colors.m3OnSurface
     width: size
