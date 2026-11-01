@@ -123,8 +123,6 @@ Rectangle {
                             text: parent.parent.modelData.text
                             role: Typography.labelLarge
                             color: Colors.m3OnSecondaryContainer
-                            // labelLarge は行の中で約 2px 下に描かれるので、アイコンと並べるときは描画だけ上げる
-                            transform: Translate { y: -2 }
                         }
                     }
                 }
