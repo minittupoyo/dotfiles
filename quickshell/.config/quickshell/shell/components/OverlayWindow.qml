@@ -49,7 +49,7 @@ Scope {
             required property var modelData    // ShellScreen
 
             screen: modelData
-            readonly property bool mine: screen.name === root.targetScreen
+            readonly property bool mine: modelData.name === root.targetScreen    // screen ではなく modelData を読む (visible との束縛ループを避ける)
             readonly property bool active: mine && root.shown
             readonly property bool animating: pop.value > 0.002 || fade.value > 0.002
 
