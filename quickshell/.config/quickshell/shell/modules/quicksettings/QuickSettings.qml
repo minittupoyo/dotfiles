@@ -14,8 +14,13 @@ OverlayWindow {
     alignRight: true
     topOffset: 72       // バー (60px) の下
     scrimOpacity: 0     // 背景は暗くしない (外側のクリックでは閉じる)
+    // 次に開くときのタブ (0 = 概要 / 1 = Bluetooth / 2 = サウンド / 3 = 通知)
+    property int startTab: 0
+
     content: Component {
-        QuickSettingsPanel {}
+        QuickSettingsPanel {
+            startTab: root.startTab
+        }
     }
 
     onShownChanged: UiState.quickSettingsOpen = shown
@@ -23,14 +28,16 @@ OverlayWindow {
     Connections {
         target: UiState
         function onQuickSettingsToggle() {
+            root.startTab = 0;
             root.toggle();
         }
     }
 
     IpcHandler {
         target: "quicksettings"
-        function toggle(): void { root.toggle(); }
-        function open(): void { root.open(); }
+        function toggle(): void { root.startTab = 0; root.toggle(); }
+        function open(): void { root.startTab = 0; root.open(); }
+        function tab(index: int): void { root.startTab = index; root.open(); }
         function close(): void { root.close(); }
     }
 }

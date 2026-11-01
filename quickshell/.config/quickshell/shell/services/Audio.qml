@@ -22,6 +22,19 @@ Singleton {
     // 出力デバイス一覧 (ハードウェアのシンクのみ。アプリのストリームは除く)
     readonly property var sinks: Pipewire.nodes.values.filter(n => n.isSink && !n.isStream)
 
+    // 入力デバイス一覧 (ハードウェアのソースのみ)
+    readonly property var sources: Pipewire.nodes.values.filter(n => !n.isSink && !n.isStream && n.audio !== null)
+    // アプリごとの再生ストリーム (音量・ミュートを持つもの)
+    readonly property var streams: Pipewire.nodes.values.filter(n => n.isStream && n.isSink && n.audio !== null)
+
+    function streamLabel(node) {
+        return node ? (node.properties["application.name"] || node.description || node.name) : "";
+    }
+
+    function setDefaultSource(node) {
+        Pipewire.preferredDefaultAudioSource = node;
+    }
+
     function sinkLabel(node) {
         return node ? (node.nickname || node.description || node.name) : "";
     }
@@ -52,6 +65,10 @@ Singleton {
             if (root.source) o.push(root.source);
             return o;
         }
+    }
+    // 一覧に出すノード (入力デバイス・アプリのストリーム) も音量を読めるようにする
+    PwObjectTracker {
+        objects: root.sources.concat(root.streams)
     }
 
     function setVolume(v) {
