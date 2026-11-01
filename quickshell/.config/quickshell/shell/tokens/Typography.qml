@@ -12,6 +12,8 @@ Singleton {
     // 期待するフォールバック順: Roboto Flex → Noto Sans CJK JP (設定は fontconfig/ 側)。
     readonly property string family: "Google Sans Flex"
     readonly property var fallbackFamilies: ["Roboto Flex", "Noto Sans CJK JP"]
+    // M3 の type scale に無い、ロック画面の時計用の特大サイズ (このシェル独自)
+    readonly property var displayHuge: ({ size: 128, lineHeight: 144, weight: Font.Normal, tracking: -1 })
     readonly property var displayLarge: ({ size: 57, lineHeight: 64, weight: Font.Normal, tracking: -0.2 })
     readonly property var displayMedium: ({ size: 45, lineHeight: 52, weight: Font.Normal, tracking: 0 })
     readonly property var displaySmall: ({ size: 36, lineHeight: 44, weight: Font.Normal, tracking: 0 })

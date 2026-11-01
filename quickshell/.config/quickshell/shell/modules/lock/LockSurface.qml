@@ -79,13 +79,13 @@ Rectangle {
             Label {
                 Layout.alignment: Qt.AlignHCenter
                 text: Qt.formatDateTime(clock.date, "HH:mm")
-                role: Typography.displayLarge
+                role: Typography.displayHuge
                 color: Colors.m3OnSurface
             }
             Label {
                 Layout.alignment: Qt.AlignHCenter
                 text: Qt.locale("ja_JP").toString(clock.date, "M月d日(dddd)")
-                role: Typography.titleLarge
+                role: Typography.headlineSmall
                 color: Colors.m3OnSurfaceVariant
             }
         }
