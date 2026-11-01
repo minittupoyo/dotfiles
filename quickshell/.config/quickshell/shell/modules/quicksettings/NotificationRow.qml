@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Effects
 import QtQuick.Layouts
 import Quickshell
 import "../../components"
@@ -70,11 +71,24 @@ Item {
                     Layout.preferredHeight: 32
                     Layout.alignment: Qt.AlignTop
 
+                    // 画像は角丸でクリップする
+                    Rectangle {
+                        id: imgMask
+                        anchors.fill: parent
+                        radius: Shapes.small
+                        visible: false
+                        layer.enabled: true
+                    }
                     Image {
                         id: img
                         anchors.centerIn: parent
                         width: 32
                         height: 32
+                        layer.enabled: true
+                        layer.effect: MultiEffect {
+                            maskEnabled: true
+                            maskSource: imgMask
+                        }
                         visible: source !== ""
                         source: root.modelData.image !== "" ? root.modelData.image : root.iconSource(root.modelData.appIcon)
                         sourceSize.width: 64
