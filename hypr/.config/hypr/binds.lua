@@ -12,6 +12,7 @@ hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))
 local qs = "qs -p $HOME/.config/quickshell/shell ipc call"
 hl.bind(mainMod .. " + W", hl.dsp.exec_cmd("sh -c '" .. qs .. " wallpaper toggle'"))
 hl.bind(mainMod .. " + R", hl.dsp.exec_cmd("sh -c '" .. qs .. " launcher toggle'"))
+hl.bind(mainMod .. " + period", hl.dsp.exec_cmd("sh -c '" .. qs .. " launcher emoji'"))
 hl.bind(mainMod .. " + SHIFT + V", hl.dsp.exec_cmd("sh -c '" .. qs .. " launcher clipboard'"))
 hl.bind("Print", hl.dsp.exec_cmd("sh -c '" .. qs .. " screenshot toggle'"))
 hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("sh -c '" .. qs .. " lock lock'"))
