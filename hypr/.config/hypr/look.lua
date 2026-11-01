@@ -30,6 +30,8 @@ hl.config({
     misc = {
         force_default_wallpaper = 0,
         disable_hyprland_logo   = true,
+        -- ロック用クライアント(qs)が落ちても、ロック画面を維持して再接続を待つ
+        allow_session_lock_restore = true,
     },
 })
 

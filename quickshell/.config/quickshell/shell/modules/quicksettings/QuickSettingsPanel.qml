@@ -306,6 +306,15 @@ Item {
             IconButton {
                 size: "m"
                 variant: "tonal"
+                icon: "lock"
+                onClicked: {
+                    root.closeRequested();
+                    Lock.lock();
+                }
+            }
+            IconButton {
+                size: "m"
+                variant: "tonal"
                 icon: "bedtime"
                 onClicked: {
                     Power.run("suspend");

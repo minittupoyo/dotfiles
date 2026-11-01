@@ -14,12 +14,24 @@ Singleton {
         poweroff: ["systemctl", "poweroff"]
     })
 
+    Timer {
+        id: suspendTimer
+        interval: 600
+        onTriggered: Quickshell.execDetached(["systemctl", "suspend"])
+    }
+
     function run(action) {
         const cmd = commands[action];
         if (!cmd)
             return false;
         if (dryRun) {
             console.log("Power(dryRun): would run:", cmd.join(" "));
+            return true;
+        }
+        // スリープ前にロックする (復帰したときに画面が見えないように)。ロックが掛かるのを少し待つ
+        if (action === "suspend") {
+            Lock.lock();
+            suspendTimer.start();
             return true;
         }
         Quickshell.execDetached(cmd);
