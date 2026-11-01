@@ -9,7 +9,7 @@ import Quickshell
 // テスト用の環境変数 (本番では設定しない):
 //   LOCK_TEST_AUTOUNLOCK_MS  ロックされてからこのミリ秒後に自動で解除する (認証を通さない)
 //   LOCK_IDLE_SECONDS        アイドルでロックするまでの秒数を上書きする
-//   LOCK_DPMS_SECONDS        ロック中に画面を消すまでの秒数を上書きする
+//   LOCK_DPMS_SECONDS        ロック中に画面を消すまでの秒数 (未設定なら消さない)
 Singleton {
     id: root
 
@@ -17,8 +17,9 @@ Singleton {
 
     // アイドルでロックするまでの時間 (既定 15 分)
     readonly property int idleSeconds: parseInt(Quickshell.env("LOCK_IDLE_SECONDS")) || 15 * 60
-    // ロック中に入力がなくなってから画面を消すまでの時間 (既定 60 秒)
-    readonly property int dpmsSeconds: parseInt(Quickshell.env("LOCK_DPMS_SECONDS")) || 60
+    // ロック中に入力がなくなってから画面を消すまでの秒数。既定は 0 (消さない)。
+    // 144Hz の DP-2 が、DPMS オフから戻らないことがあったため (NVIDIA + DP)。有効にするときは環境変数で。
+    readonly property int dpmsSeconds: parseInt(Quickshell.env("LOCK_DPMS_SECONDS")) || 0
     readonly property int testAutoUnlockMs: parseInt(Quickshell.env("LOCK_TEST_AUTOUNLOCK_MS")) || 0
 
     function lock() {

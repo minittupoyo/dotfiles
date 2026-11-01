@@ -5,7 +5,7 @@ import "../../services"
 
 // ロック画面。Lock.locked に従って WlSessionLock (ext-session-lock) を掛ける・外す。
 // 開始は IPC: qs ipc call lock lock。アイドルが Lock.idleSeconds 続いても掛かる (スリープ抑止中は掛からない)。
-// ロック中に入力が 60 秒ないと画面を消す。
+// 画面オフは既定で無効 (Lock.dpmsSeconds)。
 // 解除は PAM の認証だけ (IPC に解除は用意しない)。
 Scope {
     LockContext {
@@ -32,8 +32,8 @@ Scope {
 
     // ロック中に入力がなくなったら画面を消す。キー入力・マウス操作で Hyprland が点け直す
     IdleMonitor {
-        enabled: Lock.locked
-        timeout: Lock.dpmsSeconds
+        enabled: Lock.locked && Lock.dpmsSeconds > 0
+        timeout: Math.max(1, Lock.dpmsSeconds)
         respectInhibitors: false
         onIsIdleChanged: if (isIdle && Lock.locked) Lock.setScreens(false)
     }
