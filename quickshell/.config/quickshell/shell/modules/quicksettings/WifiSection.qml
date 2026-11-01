@@ -61,11 +61,10 @@ Item {
                 text: "再検索"
                 onClicked: Wifi.scan()
             }
-            Button {
-                size: "s"
-                variant: Wifi.powered ? "filled" : "tonal"
-                text: Wifi.powered ? "オン" : "オフ"
-                onClicked: Wifi.setPower(!Wifi.powered)
+            Switch {
+                Layout.leftMargin: 4
+                checked: Wifi.powered
+                onToggled: Wifi.setPower(!Wifi.powered)
             }
         }
 
