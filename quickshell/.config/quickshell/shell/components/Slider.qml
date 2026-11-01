@@ -7,7 +7,7 @@ Item {
     id: root
 
     property real value: 0
-    property real trackHeight: 28
+    property real trackHeight: 24
     property real step: 0.05    // ホイール 1 ノッチあたり
 
     signal moved(real value)
@@ -45,20 +45,29 @@ Item {
         epsilon: 0.01
     }
 
-    // 非アクティブ側のトラック
+    readonly property real gap: 6   // ハンドルとトラックの間隔
+
+    // 非アクティブ側のトラック (ハンドルの先から右端まで。内側の角は小さく、外側は完全に丸める)
     Rectangle {
         anchors.verticalCenter: parent.verticalCenter
-        width: parent.width
+        x: root.handleX + root.gap
+        width: Math.max(0, root.width - x)
         height: root.trackHeight
-        radius: Shapes.medium
+        topLeftRadius: Shapes.extraSmall
+        bottomLeftRadius: Shapes.extraSmall
+        topRightRadius: height / 2
+        bottomRightRadius: height / 2
         color: Colors.m3SecondaryContainer
     }
-    // アクティブ側のトラック (ハンドルの手前まで)
+    // アクティブ側のトラック (左端からハンドルの手前まで)
     Rectangle {
         anchors.verticalCenter: parent.verticalCenter
-        width: Math.max(0, root.handleX - 6)
+        width: Math.max(0, root.handleX - root.gap)
         height: root.trackHeight
-        radius: Shapes.medium
+        topLeftRadius: height / 2
+        bottomLeftRadius: height / 2
+        topRightRadius: Shapes.extraSmall
+        bottomRightRadius: Shapes.extraSmall
         color: Colors.m3Primary
     }
     // ハンドル
