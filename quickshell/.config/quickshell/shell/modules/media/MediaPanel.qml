@@ -213,6 +213,8 @@ Item {
             // ---- シーク ----
             Slider {
                 Layout.fillWidth: true
+                wavy: true
+                waving: root.player !== null && root.player.isPlaying
                 enabled: root.player !== null && root.player.canSeek && root.player.length > 0
                 value: root.player && root.player.length > 0 ? root.player.position / root.player.length : 0
                 onMoved: v => root.seekFraction(v)
