@@ -26,6 +26,10 @@ Singleton {
         return node ? (node.nickname || node.description || node.name) : "";
     }
 
+    function volumeIcon(vol, muted) {
+        return muted ? "volume_off" : vol <= 0 ? "volume_mute" : vol < 0.5 ? "volume_down" : "volume_up";
+    }
+
     function setDefaultSink(node) {
         Pipewire.preferredDefaultAudioSink = node;
     }

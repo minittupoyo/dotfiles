@@ -32,7 +32,7 @@ Item {
     readonly property var btDevices: adapter ? adapter.devices.values.filter(d => d.paired) : []
 
     function volIcon(vol, muted) {
-        return muted ? "volume_off" : vol <= 0 ? "volume_mute" : vol < 0.5 ? "volume_down" : "volume_up";
+        return Audio.volumeIcon(vol, muted);
     }
 
     ColumnLayout {

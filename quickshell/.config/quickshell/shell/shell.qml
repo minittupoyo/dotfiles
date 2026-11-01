@@ -4,6 +4,7 @@ import "modules/bar"
 import "modules/launcher"
 import "modules/lock"
 import "modules/notifications"
+import "modules/osd"
 import "modules/quicksettings"
 import "modules/wallpaper"
 
@@ -17,6 +18,9 @@ ShellRoot {
 
     // 通知のポップアップ (通知サーバー本体は services/Notifications)
     NotificationPopups {}
+
+    // 音量・マイクのミュートの OSD (Audio の変化に反応する)
+    OsdPopup {}
 
     // クイック設定 (バーのボタン / qs ipc call quicksettings toggle)
     QuickSettings {}
