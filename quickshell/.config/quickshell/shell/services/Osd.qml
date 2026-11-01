@@ -14,7 +14,7 @@ Singleton {
     property string kind: "volume"    // "volume" | "mic"
 
     // 出してよい状況か (ロック中・クイック設定が開いている間は出さない)
-    readonly property bool allowed: !Lock.locked && !UiState.quickSettingsOpen
+    readonly property bool allowed: !Lock.locked && !UiState.quickSettingsOpen && !UiState.mediaShown
 
     property bool _quiet: true
 

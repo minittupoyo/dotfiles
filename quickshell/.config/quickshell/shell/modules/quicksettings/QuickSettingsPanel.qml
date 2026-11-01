@@ -244,6 +244,10 @@ Item {
         MediaCard {
             Layout.fillWidth: true
             Layout.preferredHeight: implicitHeight
+            onClicked: {
+                root.closeRequested();
+                UiState.openMedia();
+            }
         }
 
         // ---- 通知の履歴 ----

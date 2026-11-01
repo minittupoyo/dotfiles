@@ -3,6 +3,7 @@ import Quickshell
 import "modules/bar"
 import "modules/launcher"
 import "modules/lock"
+import "modules/media"
 import "modules/notifications"
 import "modules/osd"
 import "modules/quicksettings"
@@ -18,6 +19,9 @@ ShellRoot {
 
     // 通知のポップアップ (通知サーバー本体は services/Notifications)
     NotificationPopups {}
+
+    // メディア画面 (クイック設定のメディアカードから。qs ipc call media toggle でも開く)
+    MediaScreen {}
 
     // 音量・マイクのミュートの OSD (Audio の変化に反応する)
     OsdPopup {}
