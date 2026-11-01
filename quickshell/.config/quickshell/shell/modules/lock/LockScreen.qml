@@ -8,7 +8,7 @@ import "../../services"
 // 解除は PAM の認証だけ (IPC に解除は用意しない)。
 Scope {
     LockContext {
-        id: context
+        id: lockContext
     }
 
     WlSessionLock {
@@ -17,7 +17,7 @@ Scope {
         WlSessionLockSurface {
             LockSurface {
                 anchors.fill: parent
-                context: context
+                context: lockContext
             }
         }
     }
