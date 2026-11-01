@@ -30,6 +30,12 @@ QtObject {
         value = target;
     }
 
+    // value を外から書き換えた後に、target へ向けて動かし直す (target は変わっていないので、自動では動かない)
+    function wake() {
+        if (Math.abs(value - target) > epsilon)
+            _anim.start();
+    }
+
     // 値を即座に設定する (アニメーションなし)。target も v に代入するので、target の束縛は外れる
     function snap(v) {
         _anim.stop();

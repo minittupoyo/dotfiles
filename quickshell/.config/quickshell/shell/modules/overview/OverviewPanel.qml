@@ -74,6 +74,14 @@ Item {
             'hl.dsp.window.move({ window = "address:' + c.address + '", workspace = ' + w.id + ', follow = false })']);
         // 画面上はすぐ移す (Hyprland 側は少し遅れて追いつく)
         clients = clients.map(x => x.address === c.address ? Object.assign({}, x, { ws: w.id }) : x);
+        // 移動先と元のワークスペースで並べ直されたレイアウト (位置・大きさ) を取り直す
+        refetch.restart();
+    }
+
+    Timer {
+        id: refetch
+        interval: 250
+        onTriggered: clientsProc.running = true
     }
 
     function _build(list) {

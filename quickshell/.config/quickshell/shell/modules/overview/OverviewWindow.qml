@@ -24,20 +24,20 @@ Item {
     signal dropped(real cx, real cy)
     signal clicked()
 
-    Binding on x { value: win.homeX; when: !win.dragging && !settle.running }
-    Binding on y { value: win.homeY; when: !win.dragging && !settle.running }
-    width: homeW
-    height: homeH
-    z: dragging ? 10 : 0
-    scale: dragging ? 1.06 : 1
-    Behavior on scale { NumberAnimation { duration: 120 } }
+    // 位置・大きさは、パネルが与える目標へスプリングで追従する (移動先で並べ直されたレイアウトにも滑らかに動く)。
+    // ドラッグ中は、ポインタに付いてくる。
+    SpringValue { id: sx; target: win.homeX; spec: Motion.spatialDefault; epsilon: 0.05 }
+    SpringValue { id: sy; target: win.homeY; spec: Motion.spatialDefault; epsilon: 0.05 }
+    SpringValue { id: sw; target: win.homeW; spec: Motion.spatialDefault; epsilon: 0.05 }
+    SpringValue { id: sh; target: win.homeH; spec: Motion.spatialDefault; epsilon: 0.05 }
+    SpringValue { id: lift; target: win.dragging ? 1 : 0; spec: Motion.spatialFast; epsilon: 0.002 }
 
-    // ドロップ後に元の位置 (または新しいカード) へ戻る
-    ParallelAnimation {
-        id: settle
-        NumberAnimation { target: win; property: "x"; to: win.homeX; duration: 150; easing.type: Easing.OutCubic }
-        NumberAnimation { target: win; property: "y"; to: win.homeY; duration: 150; easing.type: Easing.OutCubic }
-    }
+    Binding on x { value: sx.value; when: !win.dragging }
+    Binding on y { value: sy.value; when: !win.dragging }
+    width: Math.max(1, sw.value)
+    height: Math.max(1, sh.value)
+    z: dragging || lift.value > 0.01 ? 10 : 0
+    scale: 1 + 0.06 * lift.value
 
     readonly property string iconSource: {
         const e = DesktopEntries.heuristicLookup(client.appClass);
@@ -102,8 +102,12 @@ Item {
         }
         onReleased: () => {
             if (moved) {
+                // 離した位置から、目標 (元の場所か移動先) へスプリングで動かす
+                sx.value = win.x;
+                sy.value = win.y;
                 win.dropped(win.x + win.width / 2, win.y + win.height / 2);
-                settle.restart();
+                sx.wake();
+                sy.wake();
             }
         }
         onClicked: () => { if (!moved) win.clicked(); }
