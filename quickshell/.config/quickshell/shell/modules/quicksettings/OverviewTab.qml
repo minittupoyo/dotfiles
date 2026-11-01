@@ -9,6 +9,7 @@ import "../../tokens"
 // クイック設定の「概要」タブ。このデスクトップ機 (バッテリー・輝度なし、有線) に合わせた構成:
 //   タイル (Bluetooth / おやすみ / スリープ抑止) → 音量・マイク → メディア → 通知の履歴 → 電源
 // タイルを右クリックすると、その詳細のタブへ移る (ネットワークはクリックでも)。
+// 画面録画はクリックでフォーカス中のモニター、右クリックで範囲を選んで録画する。
 Item {
     id: root
 
@@ -92,6 +93,21 @@ Item {
                 onClicked: {
                     root.closeRequested();
                     UiState.openScreenshot();
+                }
+            }
+            ToggleTile {
+                Layout.fillWidth: true
+                Layout.preferredWidth: 1
+                icon: Recording.active ? "stop_circle" : "videocam"
+                text: Recording.active ? "録画を止める" : "画面録画"
+                checked: Recording.active
+                onClicked: {
+                    root.closeRequested();
+                    Recording.toggle("screen");
+                }
+                onRightClicked: {
+                    root.closeRequested();
+                    Recording.toggle("region");
                 }
             }
         }
