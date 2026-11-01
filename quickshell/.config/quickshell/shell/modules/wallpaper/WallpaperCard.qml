@@ -18,7 +18,7 @@ Item {
     property bool isCurrent: false    // いま適用されている壁紙
 
     signal clicked()
-    signal moved()                    // ポインタが動いた (hover による選択用)
+    signal moved(real gx, real gy)    // ポインタの画面座標つき (実際に動いたかを呼び出し側が判定する)
 
     // 拡大したカードが隣に隠れないよう、選択中は前面に出す
     z: selected ? 1 : 0
@@ -139,7 +139,10 @@ Item {
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        onPositionChanged: root.moved()
+        onPositionChanged: m => {
+            const p = root.mapToItem(null, m.x, m.y);
+            root.moved(p.x, p.y);
+        }
         onClicked: root.clicked()
     }
 }

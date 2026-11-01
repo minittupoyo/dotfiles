@@ -1,6 +1,7 @@
 //@ pragma IconTheme Adwaita
 import Quickshell
 import "modules/bar"
+import "modules/launcher"
 import "modules/wallpaper"
 
 ShellRoot {
@@ -10,6 +11,9 @@ ShellRoot {
 
         Bar {}
     }
+
+    // ランチャー (qs ipc call launcher toggle|clipboard)
+    Launcher {}
 
     // 壁紙セレクター (qs ipc call wallpaper toggle で開閉)
     WallpaperSelector {}

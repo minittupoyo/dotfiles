@@ -14,7 +14,20 @@ Item {
     signal closeRequested()
 
     // 開いたとき: 現在の壁紙を選択して、キーボードフォーカスを取る
+    // hover による選択移動の判定用 (LauncherPanel と同じ): 座標が実際に変わったときだけ選択を移す
+    property bool _ptrValid: false
+    property real _ptrX: 0
+    property real _ptrY: 0
+    function pointerMoved(index, gx, gy) {
+        if (_ptrValid && (gx !== _ptrX || gy !== _ptrY))
+            grid.currentIndex = index;
+        _ptrX = gx;
+        _ptrY = gy;
+        _ptrValid = true;
+    }
+
     function open() {
+        _ptrValid = false;
         const i = Wallpaper.indexOfCurrent();
         grid.currentIndex = i >= 0 ? i : 0;
         grid.forceActiveFocus();
@@ -149,7 +162,7 @@ Item {
                     height: grid.cellHeight
                     selected: GridView.isCurrentItem
                     isCurrent: filePath === Wallpaper.current
-                    onMoved: grid.currentIndex = index
+                    onMoved: (gx, gy) => root.pointerMoved(index, gx, gy)
                     onClicked: {
                         grid.currentIndex = index;
                         root.applyCurrent();

@@ -23,7 +23,14 @@ QtObject {
 
     property real _v: 0
 
-    // 値を即座に設定する (アニメーションなし)
+    // 今の target に即座に収束させる (アニメーションなし)。target の束縛を壊さない。
+    function settle() {
+        _anim.stop();
+        _v = 0;
+        value = target;
+    }
+
+    // 値を即座に設定する (アニメーションなし)。target も v に代入するので、target の束縛は外れる
     function snap(v) {
         _anim.stop();
         _v = 0;
