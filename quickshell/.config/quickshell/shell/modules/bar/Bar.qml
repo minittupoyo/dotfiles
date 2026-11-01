@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Wayland
+import "../../components"
 import "../../services"
 import "../../tokens"
 
@@ -42,10 +43,25 @@ PanelWindow {
         ActiveWindow { monitor: win.monitor }
     }
 
+    // 中央の島 (時計)。クリックでダッシュボードを開く
     BarIsland {
+        id: clockIsland
         anchors.centerIn: parent
 
         Clock {}
+    }
+    StateLayer {
+        anchors.fill: clockIsland
+        radius: Shapes.full
+        hovered: clockMouse.containsMouse
+        pressed: clockMouse.pressed
+    }
+    MouseArea {
+        id: clockMouse
+        anchors.fill: clockIsland
+        hoverEnabled: true
+        cursorShape: Qt.PointingHandCursor
+        onClicked: UiState.toggleDashboard()
     }
 
     BarIsland {

@@ -15,6 +15,13 @@ Singleton {
     // メディア画面が開いているか (音量の OSD が重ならないよう隠すのに使う)
     property bool mediaShown: false
 
+    // ダッシュボードの開閉の合図 (バー中央の島から送り、Dashboard が受ける)
+    signal dashboardToggle()
+
+    function toggleDashboard() {
+        dashboardToggle();
+    }
+
     function openMedia() {
         mediaOpen();
     }
