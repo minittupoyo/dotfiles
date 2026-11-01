@@ -18,6 +18,38 @@ hl.bind("Print", hl.dsp.exec_cmd("sh -c '" .. qs .. " screenshot toggle'"))
 hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("sh -c '" .. qs .. " lock lock'"))
 hl.bind(mainMod .. " + N", hl.dsp.exec_cmd("sh -c '" .. qs .. " quicksettings toggle'"))
 
+-- ウィンドウ切り替え (Alt+Tab)。Alt+Tab で「switcher」サブマップに入り、Alt を押している間は Tab で次へ、離すと確定する。
+-- サブマップの間は、ほかのバインドが効かないので、抜ける操作 (Esc・Alt の離し) は、シェルが落ちていても動くよう、
+-- IPC とは別に Lua 側で直接リセットする。シェル側にも 8 秒のタイムアウトがある。
+local sw = "qs -p $HOME/.config/quickshell/shell ipc call switcher"
+local function swcmd(c) return hl.dsp.exec_cmd("sh -c '" .. sw .. " " .. c .. "'") end
+local function swenter(c)
+    return function()
+        hl.dispatch(swcmd(c))
+        hl.dispatch(hl.dsp.submap("switcher"))
+    end
+end
+local function swleave(c)
+    return function()
+        hl.dispatch(swcmd(c))
+        hl.dispatch(hl.dsp.submap("reset"))
+    end
+end
+hl.bind("ALT + Tab", swenter("next"))
+hl.bind("ALT + SHIFT + Tab", swenter("prev"))
+hl.define_submap("switcher", function()
+    hl.bind("ALT + Tab", swcmd("next"))
+    hl.bind("ALT + SHIFT + Tab", swcmd("prev"))
+    hl.bind("Escape", swleave("cancel"))
+    hl.bind("ALT + Escape", swleave("cancel"))
+    hl.bind("ALT + SHIFT + Escape", swleave("cancel"))
+    -- Alt を離したら確定 (Shift を押したままの場合も)
+    hl.bind("Alt_L", swleave("commit"), { release = true })
+    hl.bind("Alt_R", swleave("commit"), { release = true })
+    hl.bind("SHIFT + Alt_L", swleave("commit"), { release = true })
+    hl.bind("SHIFT + Alt_R", swleave("commit"), { release = true })
+end)
+
 hl.bind(mainMod .. " + left",  hl.dsp.focus({ direction = "left" }))
 hl.bind(mainMod .. " + right", hl.dsp.focus({ direction = "right" }))
 hl.bind(mainMod .. " + up",    hl.dsp.focus({ direction = "up" }))

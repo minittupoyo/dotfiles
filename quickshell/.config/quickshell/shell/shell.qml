@@ -8,6 +8,7 @@ import "modules/media"
 import "modules/notifications"
 import "modules/osd"
 import "modules/screenshot"
+import "modules/switcher"
 import "modules/quicksettings"
 import "modules/wallpaper"
 
@@ -33,6 +34,9 @@ ShellRoot {
 
     // ランチャー (qs ipc call launcher toggle|clipboard)
     Launcher {}
+
+    // Alt+Tab のウィンドウ切り替え (Hyprland のサブマップから IPC で操作される)
+    Switcher {}
 
     // スクリーンショットのメニュー (Print キー。qs ipc call screenshot toggle でも開く)
     ScreenshotMenu {}
