@@ -87,12 +87,25 @@ Scope {
                     currentIndex: root.switcher.index
                     onCurrentIndexChanged: positionViewAtIndex(currentIndex, ListView.Contain)
 
-                    delegate: SwitcherCard {
-                        y: (list.height - height) / 2
-                        selected: index === root.switcher.index
-                        onClicked: {
-                            root.switcher.index = index;
-                            root.switcher.commit();
+                    // 横向きの ListView は、デリゲートの y を 0 に戻すので、一覧と同じ高さの枠の中にカードを置く。
+                    // (選択中のカードが少し大きくなっても、上下が枠で切れないように、カードを縦中央に置く)
+                    delegate: Item {
+                        id: slot
+                        required property var modelData
+                        required property int index
+                        width: card.width
+                        height: list.height
+
+                        SwitcherCard {
+                            id: card
+                            anchors.verticalCenter: parent.verticalCenter
+                            modelData: slot.modelData
+                            index: slot.index
+                            selected: slot.index === root.switcher.index
+                            onClicked: {
+                                root.switcher.index = slot.index;
+                                root.switcher.commit();
+                            }
                         }
                     }
                 }
