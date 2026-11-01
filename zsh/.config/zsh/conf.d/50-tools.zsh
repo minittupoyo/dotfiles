@@ -1,3 +1,6 @@
 (( $+commands[fzf] )) && source <(fzf --zsh)
 (( $+commands[zoxide] )) && eval "$(zoxide init zsh)"
-(( $+commands[mise] )) && eval "$(mise activate zsh)"
+if (( $+commands[mise] )); then
+  eval "$(mise activate zsh)"
+  source <(mise completion zsh)   # compinit (20) の後なので compdef が使える
+fi
