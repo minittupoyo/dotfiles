@@ -12,6 +12,8 @@ Rectangle {
     id: root
 
     required property LockContext context
+    // テスト用: メディアカードに偽のプレーヤーを差し込む
+    property var mediaPlayerOverride: null
 
     color: Colors.m3Surface
 
@@ -170,6 +172,13 @@ Rectangle {
                     color: Colors.m3Error
                 }
             }
+        }
+
+        // 再生中のメディア (無ければ出ない)
+        LockMedia {
+            playerOverride: root.mediaPlayerOverride
+            Layout.alignment: Qt.AlignHCenter
+            Layout.preferredWidth: 360
         }
     }
 }

@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Effects
 import QtQuick.Layouts
 import "../../components"
 import "../../services"
@@ -41,45 +40,10 @@ Rectangle {
         anchors.margins: 12
         spacing: 12
 
-        // ジャケット (角丸でクリップ)
-        Item {
+        AlbumArt {
             Layout.preferredWidth: 64
             Layout.preferredHeight: 64
-
-            Rectangle {
-                id: artMask
-                anchors.fill: parent
-                radius: Shapes.medium
-                visible: false
-                layer.enabled: true
-            }
-            Rectangle {
-                anchors.fill: parent
-                radius: Shapes.medium
-                color: Colors.m3SecondaryContainer
-            }
-            Icon {
-                anchors.centerIn: parent
-                visible: art.status !== Image.Ready
-                name: "music_note"
-                size: 28
-                color: Colors.m3OnSecondaryContainer
-            }
-            Image {
-                id: art
-                anchors.fill: parent
-                source: root.player ? root.player.trackArtUrl : ""
-                sourceSize.width: 128
-                sourceSize.height: 128
-                fillMode: Image.PreserveAspectCrop
-                asynchronous: true
-                visible: status === Image.Ready
-                layer.enabled: true
-                layer.effect: MultiEffect {
-                    maskEnabled: true
-                    maskSource: artMask
-                }
-            }
+            source: root.player ? root.player.trackArtUrl : ""
         }
 
         ColumnLayout {
