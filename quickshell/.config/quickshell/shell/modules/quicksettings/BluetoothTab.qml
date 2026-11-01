@@ -96,13 +96,28 @@ Item {
         anchors.top: parent.top
         spacing: 12
 
-        ToggleTile {
+        RowLayout {
             Layout.fillWidth: true
             visible: root.adapter !== null
-            icon: "bluetooth"
-            text: "Bluetooth"
-            checked: root.adapter !== null && root.adapter.enabled
-            onClicked: root.adapter.enabled = !root.adapter.enabled
+            spacing: 12
+
+            Icon {
+                Layout.leftMargin: 4
+                name: "bluetooth"
+                size: 24
+                fill: root.adapter !== null && root.adapter.enabled ? 1 : 0
+                color: root.adapter !== null && root.adapter.enabled ? Colors.m3Primary : Colors.m3OnSurfaceVariant
+            }
+            Label {
+                Layout.fillWidth: true
+                text: "Bluetooth"
+                role: Typography.titleMedium
+                color: Colors.m3OnSurface
+            }
+            Switch {
+                checked: root.adapter !== null && root.adapter.enabled
+                onToggled: root.adapter.enabled = !root.adapter.enabled
+            }
         }
 
         // 検出可能・ペアリング可能
