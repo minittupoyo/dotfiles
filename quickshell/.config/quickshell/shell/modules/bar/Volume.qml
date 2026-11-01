@@ -35,7 +35,12 @@ Item {
         }
     }
 
-    WheelHandler {
-        onWheel: e => Audio.changeVolume(e.angleDelta.y > 0 ? 0.05 : -0.05)
+    // ホイール用。acceptedButtons を空にして、クリックは下の IconButton に通す。
+    // (WheelHandler は既定の acceptedDevices だとホイールを受けない場合があったので MouseArea にしている)
+    // 1 ノッチ (angleDelta 120) = 5%。高解像度ホイールでも暴走しないよう比例させる。
+    MouseArea {
+        anchors.fill: parent
+        acceptedButtons: Qt.NoButton
+        onWheel: wheel => Audio.changeVolume(wheel.angleDelta.y / 120 * 0.05)
     }
 }

@@ -44,7 +44,7 @@ PanelWindow {
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
 
-        Tray { window: win }
+        Tray {}
         NetworkIcon {}
         Volume {}
     }

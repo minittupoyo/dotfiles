@@ -9,8 +9,6 @@ import "../../tokens"
 RowLayout {
     id: root
 
-    required property var window    // メニューを出す親ウィンドウ (PanelWindow)
-
     spacing: 0
     visible: SystemTray.items.values.length > 0
 
@@ -27,12 +25,18 @@ RowLayout {
             implicitHeight: 32
 
             function showMenu() {
-                const p = item.mapToItem(null, 0, item.height);
-                modelData.display(root.window, p.x, p.y);
+                if (modelData.hasMenu)
+                    menu.toggle();
             }
 
             onClicked: modelData.onlyMenu ? showMenu() : modelData.activate()
             onRightClicked: showMenu()
+
+            TrayMenu {
+                id: menu
+                anchorItem: item
+                menuHandle: item.modelData.menu
+            }
 
             // シンボリックアイコンは黒系の単色なので、テーマ色で塗り直す
             readonly property bool symbolic: String(modelData.icon).indexOf("symbolic") >= 0
