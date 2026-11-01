@@ -38,17 +38,22 @@ hl.config({
     },
 })
 
--- スプリング系を基本にする (qs 側の Motion トークンと思想を揃える)
-hl.curve("easeOutQuint", { type = "bezier", points = { {0.23, 1}, {0.32, 1} } })
-hl.curve("linear",       { type = "bezier", points = { {0, 0}, {1, 1} } })
-hl.curve("easy",         { type = "spring", mass = 1, stiffness = 238.1191, damping = 24.21279333 })
+-- M3 Expressive のスプリング。quickshell の tokens/Motion.qml と同じ値。
+-- Hyprland の damping は係数なので、減衰比 ζ から c = 2*ζ*sqrt(stiffness) (mass=1) で換算している。
+-- Spatial = 位置・大きさ (オーバーシュートあり) / Effects = 色・不透明度 (オーバーシュートなし)
+hl.curve("spatialFast",    { type = "spring", mass = 1, stiffness = 800,  damping = 33.94 })  -- ζ0.6
+hl.curve("spatialDefault", { type = "spring", mass = 1, stiffness = 380,  damping = 31.19 })  -- ζ0.8
+hl.curve("spatialSlow",    { type = "spring", mass = 1, stiffness = 200,  damping = 22.63 })  -- ζ0.8
+hl.curve("effectsFast",    { type = "spring", mass = 1, stiffness = 3800, damping = 123.29 }) -- ζ1.0
+hl.curve("effectsDefault", { type = "spring", mass = 1, stiffness = 1600, damping = 80.0 })   -- ζ1.0
+hl.curve("effectsSlow",    { type = "spring", mass = 1, stiffness = 800,  damping = 56.57 })  -- ζ1.0
 
-hl.animation({ leaf = "global",     enabled = true, speed = 10,   bezier = "default" })
-hl.animation({ leaf = "windows",    enabled = true, speed = 4.79, spring = "easy" })
-hl.animation({ leaf = "windowsIn",  enabled = true, speed = 4.1,  spring = "easy", style = "popin 87%" })
-hl.animation({ leaf = "windowsOut", enabled = true, speed = 1.49, bezier = "linear", style = "popin 87%" })
-hl.animation({ leaf = "border",     enabled = true, speed = 5.39, bezier = "easeOutQuint" })
-hl.animation({ leaf = "layers",     enabled = true, speed = 3.81, bezier = "easeOutQuint" })
-hl.animation({ leaf = "layersIn",   enabled = true, speed = 4,    bezier = "easeOutQuint", style = "fade" })
-hl.animation({ leaf = "layersOut",  enabled = true, speed = 1.5,  bezier = "linear", style = "fade" })
-hl.animation({ leaf = "workspaces", enabled = true, speed = 1.94, bezier = "easeOutQuint", style = "fade" })
+hl.animation({ leaf = "global",     enabled = true, speed = 1, spring = "effectsDefault" })
+hl.animation({ leaf = "windows",    enabled = true, speed = 1, spring = "spatialDefault" })
+hl.animation({ leaf = "windowsIn",  enabled = true, speed = 1, spring = "spatialDefault", style = "popin 87%" })
+hl.animation({ leaf = "windowsOut", enabled = true, speed = 1, spring = "effectsFast",    style = "popin 87%" })
+hl.animation({ leaf = "border",     enabled = true, speed = 1, spring = "effectsDefault" })
+hl.animation({ leaf = "layers",     enabled = true, speed = 1, spring = "spatialFast" })
+hl.animation({ leaf = "layersIn",   enabled = true, speed = 1, spring = "effectsDefault", style = "fade" })
+hl.animation({ leaf = "layersOut",  enabled = true, speed = 1, spring = "effectsFast",    style = "fade" })
+hl.animation({ leaf = "workspaces", enabled = true, speed = 1, spring = "spatialDefault", style = "slide" })
