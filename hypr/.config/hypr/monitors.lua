@@ -7,6 +7,10 @@ hl.monitor({
     scale    = 1,
 })
 
+-- 出力ごとのモード (DP-2: 144Hz / DP-3: 75Hz)。位置は左から DP-2, DP-3。
+hl.monitor({ output = "DP-2", mode = "2560x1440@144", position = "0x0",    scale = 1 })
+hl.monitor({ output = "DP-3", mode = "2560x1440@75",  position = "2560x0", scale = 1 })
+
 -- ワークスペースの個別割り当て: DP-2 = 1-5 / DP-3 = 6-10
 local assign = {
     ["DP-2"] = { 1, 2, 3, 4, 5 },
