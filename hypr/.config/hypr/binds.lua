@@ -1,7 +1,9 @@
 local mainMod  = "SUPER"
 local terminal = "kitty"
+local filemanager = "nautilus"
 
 hl.bind(mainMod .. " + Return", hl.dsp.exec_cmd(terminal))
+hl.bind(mainMod .. " + SHIFT + F", hl.dsp.exec_cmd(filemanager))
 hl.bind(mainMod .. " + Q", hl.dsp.window.close())
 hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
@@ -12,7 +14,7 @@ local qs = "qs -p $HOME/.config/quickshell/shell ipc call"
 hl.bind(mainMod .. " + Tab", hl.dsp.exec_cmd("sh -c '" .. qs .. " overview toggle'"))
 hl.bind(mainMod .. " + M", hl.dsp.exec_cmd("sh -c '" .. qs .. " power toggle'"))
 hl.bind(mainMod .. " + W", hl.dsp.exec_cmd("sh -c '" .. qs .. " wallpaper toggle'"))
-hl.bind(mainMod .. " + R", hl.dsp.exec_cmd("sh -c '" .. qs .. " launcher toggle'"))
+hl.bind(mainMod .. " + SPACE", hl.dsp.exec_cmd("sh -c '" .. qs .. " launcher toggle'"))
 hl.bind(mainMod .. " + period", hl.dsp.exec_cmd("sh -c '" .. qs .. " launcher emoji'"))
 hl.bind(mainMod .. " + SHIFT + V", hl.dsp.exec_cmd("sh -c '" .. qs .. " launcher clipboard'"))
 hl.bind("Print", hl.dsp.exec_cmd("sh -c '" .. qs .. " screenshot toggle'"))
