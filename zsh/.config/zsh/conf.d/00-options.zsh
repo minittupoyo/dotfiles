@@ -1,0 +1,3 @@
+setopt auto_cd auto_pushd pushd_ignore_dups pushd_silent
+setopt interactive_comments no_beep extended_glob
+setopt complete_in_word always_to_end
