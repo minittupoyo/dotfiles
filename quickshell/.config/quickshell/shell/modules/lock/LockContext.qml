@@ -13,28 +13,28 @@ Scope {
     property string error: ""
 
     function type(text) {
-        if (busy)
+        if (busy || Lock.unlocking)
             return;
         error = "";
         password += text;
     }
 
     function backspace() {
-        if (busy)
+        if (busy || Lock.unlocking)
             return;
         error = "";
         password = password.slice(0, -1);
     }
 
     function clear() {
-        if (busy)
+        if (busy || Lock.unlocking)
             return;
         error = "";
         password = "";
     }
 
     function submit() {
-        if (busy || password === "")
+        if (busy || Lock.unlocking || password === "")
             return;
         error = "";
         busy = true;

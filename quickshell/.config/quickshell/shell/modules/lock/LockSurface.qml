@@ -17,6 +17,36 @@ Rectangle {
 
     color: Colors.m3Surface
 
+    // ---- 出る・消えるアニメーション ----
+    // 出る: 背景 (ぼかし + 暗幕) は最初から全部出し (画面を隠すため)、時計とカードだけをスプリングで出す。
+    // 消える: 認証が通ったら (Lock.unlocking) 中身を縮めて消し、ぼかしと暗幕を抜く。終わってから Lock が解除する。
+    property bool shown: false
+    readonly property bool presenting: shown && !Lock.unlocking
+
+    Timer {
+        interval: 16
+        running: true
+        onTriggered: root.shown = true
+    }
+    SpringValue {
+        id: pop
+        target: root.presenting ? 1 : 0
+        spec: Motion.spatialDefault
+        epsilon: 0.001
+    }
+    SpringValue {
+        id: fade
+        target: root.presenting ? 1 : 0
+        spec: Motion.effectsDefault
+        epsilon: 0.001
+    }
+    SpringValue {
+        id: veil
+        target: Lock.unlocking ? 0 : 1
+        spec: Motion.effectsSlow
+        epsilon: 0.001
+    }
+
     SystemClock {
         id: clock
         precision: SystemClock.Seconds
@@ -38,11 +68,12 @@ Rectangle {
         visible: wall.status === Image.Ready
         blurEnabled: true
         blurMax: 64
-        blur: 1.0
+        blur: veil.value
     }
     Rectangle {
         anchors.fill: parent
-        color: Qt.alpha(Colors.m3Scrim, 0.45)
+        color: Colors.m3Scrim
+        opacity: 0.45 * veil.value
     }
 
     // ---- 入力 ----
@@ -73,6 +104,8 @@ Rectangle {
     ColumnLayout {
         anchors.centerIn: parent
         spacing: 32
+        opacity: fade.value
+        scale: 0.92 + 0.08 * pop.value
 
         ColumnLayout {
             Layout.alignment: Qt.AlignHCenter
