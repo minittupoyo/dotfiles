@@ -32,6 +32,9 @@ hl.config({
         disable_hyprland_logo   = true,
         -- ロック用クライアント(qs)が落ちても、ロック画面を維持して再接続を待つ
         allow_session_lock_restore = true,
+        -- ロック中に消した画面を、キー入力・マウス操作で戻す
+        key_press_enables_dpms  = true,
+        mouse_move_enables_dpms = true,
     },
 })
 
