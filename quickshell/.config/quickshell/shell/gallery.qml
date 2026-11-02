@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Layouts
 import Quickshell
 import "components"
 import "tokens"
@@ -127,6 +128,29 @@ ShellRoot {
                     IconButton { size: "m"; variant: "outlined"; icon: "star";     checkable: true; checked: true }
                     IconButton { size: "s"; variant: "text";     icon: "search" }
                     IconButton { size: "l"; variant: "filled";   icon: "wallpaper"; checkable: true }
+                }
+
+                // --- Settings parts ---
+                SettingGroup {
+                    width: 560
+                    title: "設定グループ"
+                    SettingRow {
+                        title: "スイッチ"; description: "説明のテキスト"
+                        Switch { id: gSw; checked: true; onToggled: checked = !checked }
+                    }
+                    SettingRow {
+                        title: "選択肢"
+                        ChoiceChips {
+                            id: gCh
+                            options: [{ label: "1", value: 1 }, { label: "5", value: 5 }, { label: "15", value: 15 }]
+                            current: 5
+                            onPicked: v => current = v
+                        }
+                    }
+                    SettingRow {
+                        title: "テキスト"; stacked: true
+                        TextField { Layout.fillWidth: true; text: "/home/user"; placeholder: "path" }
+                    }
                 }
             }
         }
