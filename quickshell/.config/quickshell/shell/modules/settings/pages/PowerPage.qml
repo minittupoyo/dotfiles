@@ -21,7 +21,7 @@ ColumnLayout {
         }
         SettingRow {
             title: "ロック中に画面を消す"
-            description: "NVIDIA + DP の 144Hz モニターで、画面が戻らないことがありました。使う場合は注意してください"
+            description: "環境によっては、画面が点き直らなくなることがあります。試すときは、すぐ戻せる状態で"
             ChoiceChips {
                 options: [{ label: "消さない", value: 0 }, { label: "1 分", value: 1 }, { label: "5 分", value: 5 }]
                 current: Settings.dpmsMinutes

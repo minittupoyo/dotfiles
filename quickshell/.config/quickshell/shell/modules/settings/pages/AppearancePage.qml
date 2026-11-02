@@ -14,7 +14,7 @@ ColumnLayout {
 
         SettingRow {
             title: "ダークモード"
-            description: "オフにするとライトの配色になります。壁紙から配色を作り直します"
+            description: "オフにするとライトの配色になります。変えると配色を作り直します"
             Switch {
                 checked: Settings.darkMode
                 onToggled: {
@@ -25,7 +25,7 @@ ColumnLayout {
         }
         SettingRow {
             title: "配色のスキーム"
-            description: "matugen のスキーム。Expressive が M3 Expressive の既定です"
+            description: "壁紙から配色を作る方式。変えると配色を作り直します"
             stacked: true
             ChoiceChips {
                 Layout.fillWidth: true
@@ -55,7 +55,7 @@ ColumnLayout {
 
         SettingRow {
             title: "壁紙のディレクトリ"
-            description: wallpaperField.invalid ? "ディレクトリが見つかりません" : "Enter で決定。空にすると ~/Pictures/Wallpapers に戻ります (" + Wallpaper.count + " 枚)"
+            description: wallpaperField.invalid ? "ディレクトリが見つかりません" : "Enter で決定。空にすると既定の場所に戻ります (現在 " + Wallpaper.count + " 枚)"
             stacked: true
 
             TextField {

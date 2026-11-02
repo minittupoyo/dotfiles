@@ -21,7 +21,7 @@ ColumnLayout {
         }
         SettingRow {
             title: "おやすみモード"
-            description: "ポップアップを出さず、履歴だけ残します (緊急は例外)。再起動で戻ります"
+            description: "ポップアップを出さず、履歴だけ残します (緊急は例外)。シェルを再起動すると解除されます"
             Switch { checked: Notifications.dnd; onToggled: Notifications.setDnd(!checked) }
         }
     }

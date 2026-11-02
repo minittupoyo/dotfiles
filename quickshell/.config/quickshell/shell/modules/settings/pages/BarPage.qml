@@ -31,12 +31,12 @@ ColumnLayout {
 
         SettingRow {
             title: "アクティブウィンドウのタイトル"
-            description: "バー左側のワークスペースの横"
+            description: "フォーカス中のウィンドウの名前"
             Switch { checked: Settings.barActiveWindow; onToggled: Settings.set("barActiveWindow", !checked) }
         }
         SettingRow {
             title: "システムトレイ"
-            description: "バー右側のトレイアイコン"
+            description: "常駐アプリのアイコン"
             Switch { checked: Settings.barTray; onToggled: Settings.set("barTray", !checked) }
         }
     }
