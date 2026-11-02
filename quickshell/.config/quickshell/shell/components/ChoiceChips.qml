@@ -3,7 +3,7 @@ import "../tokens"
 
 // 選択肢を横に並べるボタン列 (単一選択)。options は [{ label, value }]。
 //   ChoiceChips { options: [{label:"5分", value:5}]; current: Settings.lockMinutes; onPicked: v => Settings.set("lockMinutes", v) }
-Row {
+Flow {
     id: root
 
     property var options: []

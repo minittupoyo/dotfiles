@@ -34,10 +34,16 @@ Singleton {
     // ---- ランチャー ----
     property int clipboardResults: 50              // クリップボード履歴の表示件数
 
+    // ---- スクリーンショット ----
+    property bool screenshotSave: true             // false ならクリップボードにだけコピー
+    property int screenshotDelay: 0                // 撮影までの秒 (0 / 3 / 5)
+    property bool screenshotMigrated: false        // 旧 screenshot.json を取り込み済みか
+
     readonly property var keys: [
         "darkMode", "scheme", "wallpaperDir",
         "clock24h", "clockSeconds", "clockDate", "barTray", "barActiveWindow",
-        "notifTimeout", "lockMinutes", "dpmsMinutes", "clipboardResults"
+        "notifTimeout", "lockMinutes", "dpmsMinutes", "clipboardResults",
+        "screenshotSave", "screenshotDelay", "screenshotMigrated"
     ]
 
     // 初期値 (起動時に現在の値を控える。ファイルの読み込みは非同期なので、その前に済む)
@@ -52,7 +58,8 @@ Singleton {
 
     function resetAll() {
         for (const k of keys)
-            root[k] = defaults[k];
+            if (k !== "screenshotMigrated")
+                root[k] = defaults[k];
         save();
     }
 
@@ -94,6 +101,37 @@ Singleton {
             } catch (e) {
                 console.warn("Settings: bad settings file, using defaults:", e);
             }
+            root._migrate();
+        }
+        onLoadFailed: root._migrate()    // 初回 (設定ファイルなし)
+    }
+
+    // 旧 screenshot.json (保存するか・ディレイ) を一度だけ取り込む
+    function _migrate() {
+        if (!screenshotMigrated)
+            legacy.path = stateDir + "/screenshot.json";
+    }
+    readonly property string stateDir: (Quickshell.env("XDG_STATE_HOME") || (Quickshell.env("HOME") + "/.local/state")) + "/quickshell"
+
+    FileView {
+        id: legacy
+        printErrors: false
+        onLoaded: {
+            try {
+                const j = JSON.parse(text());
+                if (typeof j.saveToFile === "boolean")
+                    root.screenshotSave = j.saveToFile;
+                if ([0, 3, 5].indexOf(j.delay) >= 0)
+                    root.screenshotDelay = j.delay;
+            } catch (e) {
+                console.warn("Settings: bad legacy screenshot.json:", e);
+            }
+            root.screenshotMigrated = true;
+            root.save();
+        }
+        onLoadFailed: {
+            root.screenshotMigrated = true;
+            root.save();
         }
     }
 }

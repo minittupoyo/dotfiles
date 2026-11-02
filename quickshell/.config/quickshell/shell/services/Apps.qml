@@ -36,6 +36,11 @@ Singleton {
         }
     }
 
+    function resetUsage() {
+        usage = {};
+        usageStore.setText("{}");
+    }
+
     function recordLaunch(id) {
         const u = Object.assign({}, usage);
         const prev = u[id] || { count: 0, last: 0 };

@@ -67,7 +67,8 @@ QtObject {
         const t = alive ? n.expireTimeout : 0;
         if (t > 0)
             return Math.round(t < 100 ? t * 1000 : t);
-        return urgency === NotificationUrgency.Low ? 4000 : 6000;
+        const base = Settings.notifTimeout * 1000;    // 設定画面の既定の表示時間
+        return urgency === NotificationUrgency.Low ? Math.round(base * 2 / 3) : base;
     }
 
     readonly property Timer timer: Timer {

@@ -3,6 +3,7 @@ import QtQuick.Effects
 import QtQuick.Layouts
 import Quickshell.Services.SystemTray
 import "../../components"
+import "../../services"
 import "../../tokens"
 
 // システムトレイ。左クリックで activate (メニューだけの項目はメニュー)、右クリックでメニュー。
@@ -10,7 +11,7 @@ RowLayout {
     id: root
 
     spacing: 0
-    visible: SystemTray.items.values.length > 0
+    visible: Settings.barTray && SystemTray.items.values.length > 0
 
     Repeater {
         model: SystemTray.items

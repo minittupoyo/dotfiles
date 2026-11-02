@@ -99,7 +99,7 @@ Item {
             for (const e of Apps.search(query, 30))
                 out.push({ kind: "app", title: e.name, subtitle: e.comment || e.genericName || "", iconName: e.icon, payload: e });
         } else if (mode === "clipboard") {
-            for (const e of Clipboard.search(query, 50))
+            for (const e of Clipboard.search(query, Settings.clipboardResults))
                 out.push({ kind: "clip", title: e.isImage ? "画像" : e.preview, subtitle: e.isImage ? e.preview : "", isImage: e.isImage, payload: e });
         }
         return out;

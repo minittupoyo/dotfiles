@@ -376,6 +376,15 @@ Item {
                 onClicked: root.confirming = "poweroff"
             }
             Item { Layout.fillWidth: true }
+            IconButton {
+                size: "m"
+                variant: "tonal"
+                icon: "settings"
+                onClicked: {
+                    root.closeRequested();
+                    UiState.openSettings(0);
+                }
+            }
         }
 
         // 再起動・シャットダウンの確認

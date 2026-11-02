@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import "../tokens"
 
-// 設定のグループ: 見出し + 角丸のカードに行を縦に並べる。行の間には細い区切りが入る。
+// 設定のグループ: 見出し + 角丸のカードに行を縦に並べる。
 //   SettingGroup { title: "外観"; SettingRow { ... } SettingRow { ... } }
 ColumnLayout {
     id: root

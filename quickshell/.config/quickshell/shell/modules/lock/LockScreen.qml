@@ -24,8 +24,8 @@ Scope {
     }
 
     IdleMonitor {
-        enabled: !Lock.locked
-        timeout: Lock.idleSeconds
+        enabled: !Lock.locked && Lock.idleSeconds > 0
+        timeout: Math.max(1, Lock.idleSeconds)
         respectInhibitors: true
         onIsIdleChanged: if (isIdle) Lock.lock()
     }

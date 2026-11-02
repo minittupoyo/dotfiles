@@ -15,12 +15,13 @@ Singleton {
 
     readonly property string home: Quickshell.env("HOME")
     // テスト用に WALLPAPER_DIR で差し替えられる
-    readonly property string dir: Quickshell.env("WALLPAPER_DIR") || (home + "/Pictures/Wallpapers")
+    readonly property string dir: Quickshell.env("WALLPAPER_DIR") || Settings.wallpaperDir || (home + "/Pictures/Wallpapers")
     readonly property string thumbDir: (Quickshell.env("XDG_CACHE_HOME") || (home + "/.cache")) + "/shell/wallpaper-thumbs"
     readonly property string stateFile: (Quickshell.env("XDG_STATE_HOME") || (home + "/.local/state")) + "/quickshell/wallpaper"
     readonly property string binDir: home + "/.local/bin"
 
-    property string mode: "dark"
+    readonly property string mode: Settings.darkMode ? "dark" : "light"    // 設定画面で切り替える
+    readonly property string scheme: Settings.scheme
     property string current: ""
 
     readonly property alias files: filesModel
@@ -122,9 +123,15 @@ Singleton {
 
     // ---- 適用 ----
     function apply(path) {
-        applyProc.command = [binDir + "/apply-wallpaper.sh", path, mode];
+        applyProc.command = [binDir + "/apply-wallpaper.sh", path, mode, scheme];
         applyProc.running = true;
         current = path;
+    }
+
+    // 今の壁紙のまま、モード・スキームだけ変えて配色を作り直す
+    function reapply() {
+        if (current !== "")
+            apply(current);
     }
 
     Process {
@@ -145,7 +152,7 @@ Singleton {
     // 計算済みなら { primary, secondary, ... } (hex 文字列)、まだなら null
     function preview(path) {
         previewVersion;    // 依存を張る (計算が終わると更新される)
-        return _previews[path + "|" + mode] || null;
+        return _previews[path + "|" + mode + "|" + scheme] || null;
     }
 
     function requestPreview(path) {
@@ -158,12 +165,12 @@ Singleton {
     function _startPreview() {
         if (previewProc.running || _previewWanted === "")
             return;
-        if (_previews[_previewWanted + "|" + mode]) {
+        if (_previews[_previewWanted + "|" + mode + "|" + scheme]) {
             _previewWanted = "";
             return;
         }
         _previewActive = _previewWanted;
-        previewProc.command = ["matugen", "-t", "scheme-expressive", "-m", mode, "--prefer", "saturation",
+        previewProc.command = ["matugen", "-t", scheme, "-m", mode, "--prefer", "saturation",
                                "--dry-run", "-j", "hex", "-q", "image", _previewActive];
         previewProc.running = true;
     }
@@ -178,7 +185,7 @@ Singleton {
                     for (const k of ["primary", "secondary", "tertiary", "primary_container", "surface"])
                         out[k] = o.colors[k].default.color;
                     const cache = root._previews;
-                    cache[root._previewActive + "|" + root.mode] = out;
+                    cache[root._previewActive + "|" + root.mode + "|" + root.scheme] = out;
                     root._previews = cache;
                     root.previewVersion++;
                 } catch (e) {
@@ -194,5 +201,6 @@ Singleton {
         }
     }
 
+    onDirChanged: ensureThumbs()
     Component.onCompleted: ensureThumbs()
 }

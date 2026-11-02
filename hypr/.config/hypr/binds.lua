@@ -20,6 +20,7 @@ hl.bind(mainMod .. " + SHIFT + V", hl.dsp.exec_cmd("sh -c '" .. qs .. " launcher
 hl.bind("Print", hl.dsp.exec_cmd("sh -c '" .. qs .. " screenshot toggle'"))
 hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("sh -c '" .. qs .. " lock lock'"))
 hl.bind(mainMod .. " + N", hl.dsp.exec_cmd("sh -c '" .. qs .. " quicksettings toggle'"))
+hl.bind(mainMod .. " + comma", hl.dsp.exec_cmd("sh -c '" .. qs .. " settings toggle'"))
 
 -- ウィンドウ切り替え (Alt+Tab)。Alt+Tab で「switcher」サブマップに入り、Alt を押している間は Tab で次へ、離すと確定する。
 -- サブマップの間は、ほかのバインドが効かないので、抜ける操作 (Esc・Alt の離し) は、シェルが落ちていても動くよう、

@@ -9,6 +9,7 @@ import "modules/notifications"
 import "modules/osd"
 import "modules/overview"
 import "modules/power"
+import "modules/settings"
 import "modules/screenshot"
 import "modules/switcher"
 import "modules/quicksettings"
@@ -57,4 +58,7 @@ ShellRoot {
 
     // 壁紙セレクター (qs ipc call wallpaper toggle で開閉)
     WallpaperSelector {}
+
+    // 設定画面 (クイック設定の歯車 / SUPER+comma。qs ipc call settings toggle でも開く)
+    SettingsWindow {}
 }

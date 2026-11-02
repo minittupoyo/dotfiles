@@ -17,6 +17,7 @@ Item {
 
     default property alias control: ctrl.data
 
+    Layout.fillWidth: true
     implicitHeight: Math.max(64, grid.implicitHeight + 24)
 
     GridLayout {

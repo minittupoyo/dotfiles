@@ -29,6 +29,13 @@ Singleton {
         screenshotOpen();
     }
 
+    // 設定画面を開く合図 (クイック設定の歯車から送り、Settings が受ける)。page = 開くページ番号
+    signal settingsOpen(int page)
+
+    function openSettings(page) {
+        settingsOpen(page || 0);
+    }
+
     function openMedia() {
         mediaOpen();
     }

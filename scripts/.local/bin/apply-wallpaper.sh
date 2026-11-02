@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 # 壁紙適用 → matugen(expressive) → 各アプリへ反映
-# usage: apply-wallpaper.sh <image> [dark|light]
+# usage: apply-wallpaper.sh <image> [dark|light] [matugen scheme]
 set -euo pipefail
 
 img="${1:?usage: apply-wallpaper.sh <image> [dark|light]}"
 mode="${2:-dark}"
+scheme="${3:-scheme-expressive}"
 [[ -f "$img" ]] || { echo "not a file: $img" >&2; exit 1; }
 img="$(realpath "$img")"
 
@@ -13,7 +14,7 @@ awww img "$img" --transition-type grow --transition-duration 0.6 --transition-fp
 awww_pid=$!
 
 # --prefer は非対話実行で必須 (候補色が複数ある画像で停止するため)
-matugen -t scheme-expressive -m "$mode" --prefer saturation -q image "$img"
+matugen -t "$scheme" -m "$mode" --prefer saturation -q image "$img"
 
 # 現在の壁紙を記録 (壁紙セレクターが「現在」の印に使う)
 state="${XDG_STATE_HOME:-$HOME/.local/state}/quickshell"

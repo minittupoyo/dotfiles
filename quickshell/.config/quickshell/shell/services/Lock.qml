@@ -19,11 +19,11 @@ Singleton {
     property bool unlocking: false
     readonly property int unlockMs: 450
 
-    // アイドルでロックするまでの時間 (既定 15 分)
-    readonly property int idleSeconds: parseInt(Quickshell.env("LOCK_IDLE_SECONDS")) || 15 * 60
-    // ロック中に入力がなくなってから画面を消すまでの秒数。既定は 0 (消さない)。
+    // アイドルでロックするまでの時間 (設定画面。既定 15 分)
+    readonly property int idleSeconds: parseInt(Quickshell.env("LOCK_IDLE_SECONDS")) || Settings.lockMinutes * 60    // 0 ならロックしない
+    // ロック中に入力がなくなってから画面を消すまでの秒数。設定画面で選ぶ。既定は 0 (消さない)。
     // 144Hz の DP-2 が、DPMS オフから戻らないことがあったため (NVIDIA + DP)。有効にするときは環境変数で。
-    readonly property int dpmsSeconds: parseInt(Quickshell.env("LOCK_DPMS_SECONDS")) || 0
+    readonly property int dpmsSeconds: parseInt(Quickshell.env("LOCK_DPMS_SECONDS")) || Settings.dpmsMinutes * 60
     readonly property int testAutoUnlockMs: parseInt(Quickshell.env("LOCK_TEST_AUTOUNLOCK_MS")) || 0
 
     function lock() {
